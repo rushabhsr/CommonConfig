@@ -21,15 +21,8 @@ if _omb_util_binary_exists emerge; then
   alias esync="${_omb_tmp_sudo}emerge --sync" # Enoch SYNC
   alias eb="${_omb_tmp_sudo}ebuild" # Enoch Build
   alias er="${_omb_tmp_sudo}emerge -c" # Enoch Remove
-  alias emfu="${_omb_tmp_sudo}emerge --sync && ${_omb_tmp_sudo}emerge -uDN @world" # Enoch Upgrade System
-  # Deprecated, retained for backward compatibility. Use `er` instead.
-  alias ers="${_omb_tmp_sudo}emerge -c"
-fi
-if _omb_util_binary_exists eclean; then
-  alias ecd="${_omb_tmp_sudo}eclean-dist -d" # Enoch Clean Repository Source Files
-  alias ecp="${_omb_tmp_sudo}eclean-pkg -d" # Enoch Clean Binary Packages
-fi
-if _omb_util_binary_exists eix; then
+  alias ers="${_omb_tmp_sudo}emerge -c" # Enoch Remove Systempackage
+  alias emfu="${_omb_tmp_sudo}emerge --sync && ${_omb_tmp_sudo}emerge -uDUj @world"
   alias elip="${_omb_tmp_sudo}eix-installed -a" # Enoch List Installed Packages
 fi
 
@@ -58,21 +51,6 @@ if _omb_util_binary_exists dpkg; then
   alias dpkg="${_omb_tmp_sudo}dpkg"
 fi
 
-# Volian - Nala
-if _omb_util_binary_exists nala; then
-  alias nala="${_omb_tmp_sudo}nala" # A faster, prettier front-end for libapt->
-  alias nalaf="${_omb_tmp_sudo}nala fetch" # Nala Fastest Mirror
-  alias nalau="${_omb_tmp_sudo}nala update" # Nala Update
-  alias nalafu="${_omb_tmp_sudo}nala upgrade -y" # Nala Update & Full-Upgrade >
-  alias nalai="${_omb_tmp_sudo}nala install -y" # Nala Install
-  alias nalar="${_omb_tmp_sudo}nala remove -y" # Nala Remove
-  alias nalaa="${_omb_tmp_sudo}nala autoremove -y" # Nala Auto Remove
-  alias nalah="${_omb_tmp_sudo}nala history" # Nala History
-  alias nalal="${_omb_tmp_sudo}nala list" # Nala List
-  alias nalas="${_omb_tmp_sudo}nala search" # Nala Search
-  alias nalav="${_omb_tmp_sudo}nala show" # Nala View Package Info
-fi
-
 # # Zypper = Zen Yast Package Program (ZYPP?)
 # if _omb_util_binary_exists zypper; then
 #   # Yast = Yet Another Silly/Setup Thing/Thing
@@ -88,23 +66,5 @@ fi
 #     alias subl="${_omb_tmp_sudo}sublime3"
 #   fi
 # fi
-
-# Fedora Package - dnf
-if _omb_util_binary_exists dnf; then
-  alias dnf="${_omb_tmp_sudo}dnf" # DNF Packaging Tool
-  alias dnfl="${_omb_tmp_sudo}dnf list" # List
-  alias dnfli="${_omb_tmp_sudo}dnf list installed" # List Installed
-  alias dnfgl="${_omb_tmp_sudo}dnf grouplist" # Group List
-  alias dnfmc="${_omb_tmp_sudo}dnf makecache" # Make Cache
-  alias dnfp="${_omb_tmp_sudo}dnf info" # Show Package Info
-  alias dnfs="${_omb_tmp_sudo}dnf search" # Search
-
-  alias dnfu="${_omb_tmp_sudo}dnf upgrade" # Update
-  alias dnfi="${_omb_tmp_sudo}dnf install" # Install
-  alias dnfgi="${_omb_tmp_sudo}dnf group install" # Group Install
-  alias dnfr="${_omb_tmp_sudo}dnf remove" # Remove
-  alias dnfgr="${_omb_tmp_sudo}dnf groupremove" # Group Remove
-  alias dnfc="${_omb_tmp_sudo}dnf clean all" # Clean All
-fi
 
 unset -v _omb_tmp_sudo

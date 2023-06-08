@@ -83,10 +83,6 @@
 
 [![](duru/duru-dark.png)](duru/duru-dark.png)
 
-## `edsonarios`
-
-[![](edsonarios/edsonarios-dark.png)](edsonarios/edsonarios-dark.png)
-
 ## `emperor`
 
 [![](emperor/emperor-dark.png)](emperor/emperor-dark.png)
@@ -135,10 +131,6 @@
 
 [![](minimal/minimal-dark.png)](minimal/minimal-dark.png)
 
-## `minimal-gh`
-
-[![](minimal-gh/minimal-gh-dark.png)](minimal-gh/minimal-gh-dark.png)
-
 ## `modern`
 
 [![](modern/modern-dark.png)](modern/modern-dark.png)
@@ -168,17 +160,9 @@
 
 [![](pete/pete-dark.png)](pete/pete-dark.png)
 
-## `powerbash10k`
-
-[![](powerbash10k/powerbash10k-dark.png)](powerbash10k/powerbash10k-dark.png)
-
 ## `powerline`
 
 [![](powerline/powerline-dark.png)](powerline/powerline-dark.png)
-
-## `powerline-icon`
-
-[![](powerline-icon/powerline-icon-dark.png)](powerline-icon/powerline-icon-dark.png)
 
 ## `powerline-light`
 

@@ -454,7 +454,7 @@ __git_flow_prefix ()
 {
 	case "$1" in
 	feature|release|hotfix|support)
-		_omb_prompt_git config "gitflow.prefix.$1" 2> /dev/null || echo "$1/"
+		git config "gitflow.prefix.$1" 2> /dev/null || echo "$1/"
 		return
 		;;
 	esac
@@ -464,14 +464,14 @@ __git_flow_list_local_branches ()
 {
 	if [ -n "$1" ]; then
 		local prefix="$(__git_flow_prefix $1)"
-		_omb_prompt_git for-each-ref --shell --format="ref=%(refname:short)" refs/heads/$prefix | \
+		git for-each-ref --shell --format="ref=%(refname:short)" refs/heads/$prefix | \
 			while read -r entry; do
 				eval "$entry"
 				ref="${ref#$prefix}"
 				echo "$ref"
 			done | sort
 	else
-		_omb_prompt_git for-each-ref --format="ref=%(refname:short)" refs/heads/ | sort
+		git for-each-ref --format="ref=%(refname:short)" refs/heads/ | sort
 
 	fi
 }
@@ -479,8 +479,8 @@ __git_flow_list_local_branches ()
 __git_flow_list_remote_branches ()
 {
 	local prefix="$(__git_flow_prefix $1)"
-	local origin="$(_omb_prompt_git config gitflow.origin 2> /dev/null || echo "origin")"
-	_omb_prompt_git for-each-ref --shell --format='%(refname:short)' refs/remotes/$origin/$prefix | \
+	local origin="$(git config gitflow.origin 2> /dev/null || echo "origin")"
+	git for-each-ref --shell --format='%(refname:short)' refs/remotes/$origin/$prefix | \
 			while read -r entry; do
 				eval "$entry"
 				ref="${ref##$prefix}"
@@ -490,17 +490,17 @@ __git_flow_list_remote_branches ()
 
 __git_flow_list_branches ()
 {
-	local origin="$(_omb_prompt_git config gitflow.origin 2> /dev/null || echo "origin")"
+	local origin="$(git config gitflow.origin 2> /dev/null || echo "origin")"
 	if [ -n "$1" ]; then
 		local prefix="$(__git_flow_prefix $1)"
-		_omb_prompt_git for-each-ref --shell --format="ref=%(refname:short)" refs/heads/$prefix refs/remotes/$origin/$prefix | \
+		git for-each-ref --shell --format="ref=%(refname:short)" refs/heads/$prefix refs/remotes/$origin/$prefix | \
 			while read -r entry; do
 				eval "$entry"
 				ref="${ref##$prefix}"
 				echo "$ref"
 			done | sort
 	else
-		_omb_prompt_git for-each-ref --format="%(refname:short)" refs/heads/ refs/remotes/$origin | sort
+		git for-each-ref --format="%(refname:short)" refs/heads/ refs/remotes/$origin | sort
 	fi
 }
 

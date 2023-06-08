@@ -263,7 +263,7 @@ function prompt_segment {
     debug "post prompt " $(ansi codes[@])
     PR="$PR$(ansi codes[@]) "
   else
-    debug "no current BG, codes are (${codes[*]})"
+    debug "no current BG, codes is $codes[@]"
     PR="$PR$(ansi codes[@]) "
   fi
   CURRENT_BG=$1
@@ -283,9 +283,6 @@ function prompt_end {
 
 ### virtualenv prompt
 function prompt_virtualenv {
-  # Exclude pyenv
-  [[ $PYENV_VIRTUALENV_INIT == 1 ]] && _omb_util_binary_exists pyenv && return 0
-
   if [[ -d $VIRTUAL_ENV ]]; then
     # Python could output the version information in both stdout and
     # stderr (e.g. if using pyenv, the output goes to stderr).
@@ -296,29 +293,6 @@ function prompt_virtualenv {
     local VENV_VERSION=$(awk '{print $NF}' <<< "$VERSION_OUTPUT")
 
     prompt_segment cyan white "[v] $(basename "$VENV_VERSION")"
-  fi
-}
-
-### pyenv prompt
-function prompt_pyenv {
-  if [[ $PYENV_VIRTUALENV_INIT == 1 ]] && _omb_util_binary_exists pyenv; then
-    # Priority is shell > local > global
-    # When pyenv shell is set, the environment variable $PYENV_VERSION is set with the value we want
-    if [[ ! ${PYENV_VERSION-} ]]; then
-      # If not set, fall back to pyenv local/global to get the version
-      local PYENV_VERSION=$(pyenv local 2>/dev/null || pyenv global 2>/dev/null)
-    fi
-    # If it is not the system's python, then display additional info
-    if [[ "$PYENV_VERSION" != "system" ]]; then
-      # It's a pyenv virtualenv, get the version number
-      if [[ -d $PYENV_VIRTUAL_ENV ]]; then
-        local VERSION_OUTPUT=$("$PYENV_VIRTUAL_ENV"/bin/python --version 2>&1)
-        local PYENV_VENV_VERSION=$(awk '{print $NF}' <<< "$VERSION_OUTPUT")
-        prompt_segment cyan white "[$PYENV_VERSION] $(basename "$PYENV_VENV_VERSION")"
-      else
-        prompt_segment cyan white "$PYENV_VERSION"
-      fi
-    fi
   fi
 }
 
@@ -353,25 +327,25 @@ function prompt_histdt {
 
 
 function git_status_dirty {
-  dirty=$(_omb_prompt_git status -s 2> /dev/null | tail -n 1)
+  dirty=$(command git status -s 2> /dev/null | tail -n 1)
   [[ -n $dirty ]] && echo " ●"
 }
 
 function git_stash_dirty {
-  stash=$(_omb_prompt_git stash list 2> /dev/null | tail -n 1)
+  stash=$(command git stash list 2> /dev/null | tail -n 1)
   [[ -n $stash ]] && echo " ⚑"
 }
 
 # Git: branch/detached head, dirty status
 function prompt_git {
   local ref dirty
-  if _omb_prompt_git rev-parse --is-inside-work-tree &>/dev/null; then
+  if command git rev-parse --is-inside-work-tree &>/dev/null; then
     ZSH_THEME_GIT_PROMPT_DIRTY='±'
     dirty=$(git_status_dirty)
     stash=$(git_stash_dirty)
-    ref=$(_omb_prompt_git symbolic-ref HEAD 2> /dev/null) ||
-      ref="➦ $(_omb_prompt_git describe --exact-match --tags HEAD 2> /dev/null)" ||
-      ref="➦ $(_omb_prompt_git show-ref --head -s --abbrev | head -n1 2> /dev/null)"
+    ref=$(command git symbolic-ref HEAD 2> /dev/null) ||
+      ref="➦ $(command git describe --exact-match --tags HEAD 2> /dev/null)" ||
+      ref="➦ $(command git show-ref --head -s --abbrev | head -n1 2> /dev/null)"
     if [[ -n $dirty ]]; then
       prompt_segment yellow black
     else
@@ -459,7 +433,7 @@ function __command_rprompt {
   [ -z "$times" ] || printf "%${n}s$times\\r" ''
 }
 
-# this doesn't wrap code in \[ \]
+# this doens't wrap code in \[ \]
 function ansi_r {
   local seq
   local -a mycodes2=("${!1}")
@@ -521,7 +495,7 @@ function prompt_right_segment {
   debug "post prompt " $(ansi_r codes[@])
   PRIGHT="$PRIGHT$(ansi_r codes[@]) "
   # else
-  #     debug "no current BG, codes are (${codes[*]})"
+  #     debug "no current BG, codes is $codes[@]"
   #     PRIGHT="$PRIGHT$(ansi codes[@]) "
   # fi
   CURRENT_RBG=$1
@@ -560,7 +534,6 @@ function build_prompt {
   [[ -z ${AG_NO_CONTEXT+x} ]] && prompt_context
   if [[ ${OMB_PROMPT_SHOW_PYTHON_VENV-} ]]; then
     prompt_virtualenv
-    prompt_pyenv
     prompt_condaenv
   fi
   prompt_dir
