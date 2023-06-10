@@ -1,7 +1,3 @@
-#alaises
-alias ls='ls --color=always'
-alias ll='ls -lrth'
-alias ls20='ls -lrth | tail -20'
 
 function getCM(){
     complete="100"
@@ -14,15 +10,11 @@ function getCM(){
     fi
     echo -e "ID:$1;DONE:$complete;HOURS:$effort; $2"
 }
-export getCM
-function DEBUG(){
-    echo -e "`date +%a_%d_%m_%y%H_%M_%S`: $1"
-}
-export DEBUG
-function fikFetch(){
-    echo -e '/jmpz5\n\r' | echo -e '/jmp-non-prod\n\r' | echo -e '/gcp\n\r' | fik context fetch
-    sleep 1; osascript -e 'tell application "System Events" to keystroke return' | sleep 1;osascript -e 'tell application "System Events" to keystroke return' | echo -e "/gcp" | fik context fetch
-}
+
+# function fikFetch(){
+    # echo -e '/jmpz5\n\r' | echo -e '/jmp-non-prod\n\r' | echo -e '/gcp' | fik context fetch
+    # sleep 1; osascript -e 'tell application "System Events" to keystroke return' | sleep 1;osascript -e 'tell application "System Events" to keystroke return' | echo -e "/gcp" | fik context fetch
+# }
 function conPod(){
     #fik context fetch
     pod=`kubectl get pods | grep "$1" | grep "Running" | awk -F '    ' 'NR==1{print $1}'`
@@ -175,11 +167,3 @@ resetenv() {
     pip install --upgrade pandas black confluent_kafka==1.5.0
     poetry install --no-cache
 }
-
-source /Users/rushabhsarvaiya/.docker/init-zsh.sh || true # Added by Docker Desktop
-
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/rushabhsarvaiya/Documents/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/rushabhsarvaiya/Documents/google-cloud-sdk/path.zsh.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/Users/rushabhsarvaiya/Documents/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/rushabhsarvaiya/Documents/google-cloud-sdk/completion.zsh.inc'; fi
