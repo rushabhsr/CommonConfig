@@ -57,43 +57,43 @@ alias kdelns='kubectl delete namespace'
 alias kcn='kubectl config set-context $(kubectl config current-context) --namespace'
 
 # ConfigMap management
-alias kgcm='kubectl get configmaps'
-alias kecm='kubectl edit configmap'
-alias kdcm='kubectl describe configmap'
-alias kdelcm='kubectl delete configmap'
+# alias kgcm='kubectl get configmaps'
+# alias kecm='kubectl edit configmap'
+# alias kdcm='kubectl describe configmap'
+# alias kdelcm='kubectl delete configmap'
 
 # Secret management
-alias kgsec='kubectl get secret'
-alias kdsec='kubectl describe secret'
-alias kdelsec='kubectl delete secret'
+# alias kgsec='kubectl get secret'
+# alias kdsec='kubectl describe secret'
+# alias kdelsec='kubectl delete secret'
 
 # Deployment management.
-alias kgd='kubectl get deployment'
-alias kgdw='kgd --watch'
-alias kgdwide='kgd -o wide'
-alias ked='kubectl edit deployment'
-alias kdd='kubectl describe deployment'
-alias kdeld='kubectl delete deployment'
-alias ksd='kubectl scale deployment'
-alias krsd='kubectl rollout status deployment'
-function kres {
-    kubectl set env $@ REFRESHED_AT=$(date +%Y%m%d%H%M%S)
-}
+# alias kgd='kubectl get deployment'
+# alias kgdw='kgd --watch'
+# alias kgdwide='kgd -o wide'
+# alias ked='kubectl edit deployment'
+# alias kdd='kubectl describe deployment'
+# alias kdeld='kubectl delete deployment'
+# alias ksd='kubectl scale deployment'
+# alias krsd='kubectl rollout status deployment'
+# function kres {
+#     kubectl set env $@ REFRESHED_AT=$(date +%Y%m%d%H%M%S)
+# }
 
 # Rollout management.
-alias kgrs='kubectl get rs'
-alias krh='kubectl rollout history'
-alias kru='kubectl rollout undo'
+# alias kgrs='kubectl get rs'
+# alias krh='kubectl rollout history'
+# alias kru='kubectl rollout undo'
 
 # Statefulset management.
-alias kgss='kubectl get statefulset'
-alias kgssw='kgss --watch'
-alias kgsswide='kgss -o wide'
-alias kess='kubectl edit statefulset'
-alias kdss='kubectl describe statefulset'
-alias kdelss='kubectl delete statefulset'
-alias ksss='kubectl scale statefulset'
-alias krsss='kubectl rollout status statefulset'
+# alias kgss='kubectl get statefulset'
+# alias kgssw='kgss --watch'
+# alias kgsswide='kgss -o wide'
+# alias kess='kubectl edit statefulset'
+# alias kdss='kubectl describe statefulset'
+# alias kdelss='kubectl delete statefulset'
+# alias ksss='kubectl scale statefulset'
+# alias krsss='kubectl rollout status statefulset'
 
 # Port forwarding
 alias kpf="kubectl port-forward"
@@ -104,7 +104,7 @@ alias kgaa='kubectl get all --all-namespaces'
 
 # Logs
 alias kl='kubectl logs'
-alias klf='kubectl logs -f'
+alias klf='kubectl logs -30f'
 
 # File copy
 alias kcp='kubectl cp'
@@ -116,8 +116,8 @@ alias kdno='kubectl describe node'
 alias kdelno='kubectl delete node'
 
 # PVC management.
-alias kgpvc='kubectl get pvc'
-alias kgpvcw='kgpvc --watch'
-alias kepvc='kubectl edit pvc'
-alias kdpvc='kubectl describe pvc'
-alias kdelpvc='kubectl delete pvc'
+# alias kgpvc='kubectl get pvc'
+# alias kgpvcw='kgpvc --watch'
+# alias kepvc='kubectl edit pvc'
+# alias kdpvc='kubectl describe pvc'
+# alias kdelpvc='kubectl delete pvc'
