@@ -1,8 +1,11 @@
 function getDbUrl(){
-    allUrls=`cat /Users/rushabhsarvaiya/Documents/AllConnections.uri | grep -iE $1`
-    silverboltUrl=`echo -e "$allUrls" | grep -i silverbolt | awk -F "=" '{$1=""; print $0}'`
-    orbisUrl=`echo -e "$allUrls" | grep -i orbis | awk -F "=" '{$1=""; print $0}'`
-    finalStr=`echo -e "mongo_silverbolt_read_write:${silverboltUrl}\nmongo_orbis_read_write:${orbisUrl}"`
+    allUrls=`grep -iE $1 /Users/rushabhsarvaiya/Documents/AllConnections.uri`
+    silverboltUrl=`echo -e "$allUrls" | grep -i silverbolt | awk -F ":=" '{print $2}'`
+    # echo -e "$silverboltUrl"
+    orbisUrl=`echo -e "$allUrls" | grep -i orbis | awk -F ":=" '{print $2}'`
+    # echo -e "$orbisUrl"
+    finalStr=`echo -e "mongo_silverbolt_read_write: ${silverboltUrl}\nmongo_orbis_read_write: ${orbisUrl}"`
+    # echo -e "$finalStr"
     echo -e "$finalStr" | pbcopy
 }
 
