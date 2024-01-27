@@ -133,9 +133,9 @@ function pfss(){
 }
 
 kube () {
-    kubectl config use-context "$1"-m1-core
+    kubectl config use-context "$1"
     if [ "$?" = 1 ]; then
-        kubectl config use-context "$1"-m2-core
+        kubectl config use-context "$1"
     fi
 }
 kubecon () {
