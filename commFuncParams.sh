@@ -30,4 +30,3 @@ alias rd="npm run dev"
 alias sf='if [ "$(basename "$PWD")" != "frontend" ]; then cd frontend; fi && rd'
 alias sb='if [ "$(basename "$PWD")" != "backend" ]; then cd backend; fi && rd'
 alias sb-indi="cd ${APPS_DIR}/indi-wheel/backend && sudo docker-compose up"
-alias sf-indi="cd ${APPS_DIR}/indi-wheel/frontend && npm run dev"
