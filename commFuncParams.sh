@@ -18,6 +18,7 @@ create_app_aliases() {
   for dir in "$APPS_DIR"/*/; do
     folder_name=$(basename "$dir")
     alias "$folder_name"="cd \"$dir\""
+    alias "code-$folder_name"="code \"$dir\""
     alias "sf-$folder_name"="cd \"$dir\"frontend && rd"
     alias "sb-$folder_name"="cd \"$dir\"backend && rd"
   done
