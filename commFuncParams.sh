@@ -32,3 +32,4 @@ alias sf='if [ "$(basename "$PWD")" != "frontend" ]; then cd frontend; fi && rd'
 alias sb='if [ "$(basename "$PWD")" != "backend" ]; then cd backend; fi && rd'
 alias sb-indi="cd ${APPS_DIR}/indi-wheel/backend && sudo docker-compose up"
 alias gbDexcept='f(){ git branch --format="%(refname:short)" | grep -vE "($(IFS="|"; echo "$*"))" | grep -v "$(git rev-parse --abbrev-ref HEAD)" | xargs -r git branch -D; }; f'
+alias dockerclean="docker system prune -a --volumes --force"
