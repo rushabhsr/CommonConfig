@@ -7,6 +7,10 @@ if ! pgrep -u "$USER" ssh-agent > /dev/null; then
     eval "$(ssh-agent -s)"
 fi
 
+alias rm='rm -v'
+alias ls20='ls -lrth | tail -20'
+alias ls10='ls -lrth | tail -10'
+
 # Aliases to start Apache2 and MySQL
 alias start_php='sudo systemctl start apache2 && sudo systemctl start mysql'
 # Aliases to stop Apache2 and MySQL
