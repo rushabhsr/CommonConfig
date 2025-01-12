@@ -26,7 +26,16 @@ create_app_aliases() {
     alias "sf-$folder_name"="cd \"$dir\"frontend && rd"
     alias "sb-$folder_name"="cd \"$dir\"backend && rd"
   done
+
+  for dir in "$HOME"/my_applications/*/; do
+    folder_name=$(basename "$dir")
+    alias "$folder_name"="cd \"$dir\""
+    alias "code-$folder_name"="code \"$dir\""
+    alias "sf-$folder_name"="cd \"$dir\"frontend && rd"
+    alias "sb-$folder_name"="cd \"$dir\"backend && rd"
+  done
 }
+
 create_app_aliases
 
 alias lapps="cd ${APPS_DIR}/ && ls -lrth"
