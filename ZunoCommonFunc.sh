@@ -6,7 +6,6 @@ alias audit='cd /home/rushabhsr/applications/cms-audit-log && python -m venv ven
 
 alias cascelery='celery -A cms_assessment_service.celery_app worker --pool solo -l info'
 alias cmscelery='celery -A CMS.celery_app worker --pool solo -l info'
-alias cmsf='cd /home/rushabhsr/applications/cms-frontend && nvm use 17.9.0 && npm start'
 alias dbshell='python manage.py dbshell'
 alias jobber='cd /home/rushabhsr/applications/edel-claim-jobber'
 alias migrate='python manage.py migrate'
@@ -37,3 +36,8 @@ alias cmsrestart='docker restart registration-docker-celery && docker restart cl
 alias opsrestart='docker restart cms-claim-operations-celery && docker restart cms-claim-operations'
 alias payrestart='docker restart cms-payment-service-celery && docker restart cms-payment-service'
 alias jobberrestart='docker restart cms-claim-jobber'
+
+
+alias sf-cms-frontend='cd /home/rushabhsr/applications/cms-frontend && npm start'
+alias sf-staar='cd /home/rushabhsr/applications/pulse-ui && npm start'
+alias sb-staar='cd /home/rushabhsr/applications/pulse-api && npm run dev'
