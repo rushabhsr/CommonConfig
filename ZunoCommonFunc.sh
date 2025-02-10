@@ -37,7 +37,16 @@ alias opsrestart='docker restart cms-claim-operations-celery && docker restart c
 alias payrestart='docker restart cms-payment-service-celery && docker restart cms-payment-service'
 alias jobberrestart='docker restart cms-claim-jobber'
 
+alias auditrestart='docker stop cms-audit-log'
+alias casstop='docker stop cms-assessment-service-celery && docker stop cms-assessment-service'
+alias cmsstop='docker stop registration-docker-celery && docker stop claim-management-system'
+alias opsstop='docker stop cms-claim-operations-celery && docker stop cms-claim-operations'
+alias paystop='docker stop cms-payment-service-celery && docker stop cms-payment-service'
+alias jobberstop='docker stop cms-claim-jobber'
 
-alias sf-cms-frontend='cd /home/rushabhsr/applications/cms-frontend && npm start'
+
+alias sf-cv='cd /home/rushabhsr/applications/cms-frontend && npm start'
+    alias sb-cv='cd /home/rushabhsr/applications/edel-claims_management && sudo
+docker-compose up'
 alias sf-staar='cd /home/rushabhsr/applications/pulse-ui && npm start'
 alias sb-staar='cd /home/rushabhsr/applications/pulse-api && npm run dev'
