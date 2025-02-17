@@ -45,8 +45,34 @@ alias paystop='docker stop cms-payment-service-celery && docker stop cms-payment
 alias jobberstop='docker stop cms-claim-jobber'
 
 
+alias opsclogsfile='sudo docker logs --tail 20000 cms-claim-operations-celery >& ~/logs/cms-claim-operations-celery_$(date +\%d\%m\%Y_\%H\%M\%S).log'
+alias payclogsfile='sudo docker logs --tail 20000 cms-payment-service-celery >& ~/logs/cms-payment-service-celery_$(date +\%d\%m\%Y_\%H\%M\%S).log'
+alias caslogsfile='sudo docker logs --tail 20000 cms-assessment-service >& ~/logs/cms-assessment-service_$(date +\%d\%m\%Y_\%H\%M\%S).log'
+alias opslogsfile='sudo docker logs --tail 20000 cms-claim-operations >& ~/logs/cms-claim-operations_$(date +\%d\%m\%Y_\%H\%M\%S).log'
+alias paylogsfile='sudo docker logs --tail 20000 cms-payment-service >& ~/logs/cms-payment-service_$(date +\%d\%m\%Y_\%H\%M\%S).log'
+alias casclogsfile='sudo docker logs --tail 20000 cms-assessment-service-celery >& ~/logs/cms-assessment-service-celery_$(date +\%d\%m\%Y_\%H\%M\%S).log'
+alias auditlogsfile='sudo docker logs --tail 20000 cms-audit-log >& ~/logs/cms-audit-log_$(date +\%d\%m\%Y_\%H\%M\%S).log'
+alias cmsclogsfile='sudo docker logs --tail 20000 registration-docker-celery >& ~/logs/registration-docker-celery_$(date +\%d\%m\%Y_\%H\%M\%S).log'
+alias cmslogsfile='sudo docker logs --tail 20000 claim-management-system >& ~/logs/claim-management-system_$(date +\%d\%m\%Y_\%H\%M\%S).log'
+alias jobberlogsfile='sudo docker logs --tail 20000 cms-claim-jobber >& ~/logs/cms-claim-jobber_$(date +\%d\%m\%Y_\%H\%M\%S).log'
+alias notifierlogsfile='sudo docker logs --tail 20000 pensive_visvesvaraya >& ~/logs/pensive_visvesvaraya_$(date +\%d\%m\%Y_\%H\%M\%S).log'
+
+
+alias generate_all_logs='
+  opsclogsfile && \
+  payclogsfile && \
+  caslogsfile && \
+  opslogsfile && \
+  paylogsfile && \
+  casclogsfile && \
+  auditlogsfile && \
+  cmsclogsfile && \
+  cmslogsfile && \
+  jobberlogsfile'
+
+
 alias sf-cv='cd /home/rushabhsr/applications/cms-frontend && npm start'
-    alias sb-cv='cd /home/rushabhsr/applications/edel-claims_management && sudo
-docker-compose up'
+alias sb-cv='cd /home/rushabhsr/applications/edel-claims_management && sudo docker-compose up'
 alias sf-staar='cd /home/rushabhsr/applications/pulse-ui && npm start'
 alias sb-staar='cd /home/rushabhsr/applications/pulse-api && npm run dev'
+
