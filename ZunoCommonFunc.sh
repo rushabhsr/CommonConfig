@@ -76,3 +76,23 @@ alias sb-cv='cd /home/rushabhsr/applications/edel-claims_management && sudo dock
 alias sf-staar='cd /home/rushabhsr/applications/pulse-ui && npm start'
 alias sb-staar='cd /home/rushabhsr/applications/pulse-api && npm run dev'
 
+alias qassh='sshpass -p "2YNyKp^'\''FTP+:F+A" ssh cms-admin@172.31.0.19'
+alias uatssh='sshpass -p "2YNyKp^'\''FTP+:F+A" ssh cms-admin@10.226.241.35'
+
+
+mrprod() {
+  glab mr create -s "${2:-$(git rev-parse --abbrev-ref HEAD)}" --target-branch production --title "$1-$(date +%d%m%Y)-RS" -d "$1" -y
+}
+
+mruat() {
+  glab mr create -s "${2:-$(git rev-parse --abbrev-ref HEAD)}" --target-branch uat --title "$1-$(date +%d%m%Y)-RS" -d "$1" -y
+}
+
+mrqa() {
+  glab mr create -s "${2:-$(git rev-parse --abbrev-ref HEAD)}" --target-branch qa --title "$1-$(date +%d%m%Y)-RS" -d "$1" -y
+}
+
+mrdev() {
+  glab mr create -s "${2:-$(git rev-parse --abbrev-ref HEAD)}" --target-branch development --title "$1-$(date +%d%m%Y)-RS" -d "$1" -y
+}
+
