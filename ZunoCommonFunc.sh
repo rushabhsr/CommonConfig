@@ -19,30 +19,30 @@ alias runops='python manage.py runserver 8003'
 alias runpay='python manage.py runserver 8006'
 alias runserver='python manage.py runserver'
 
-alias opsclogs='f() { docker logs --tail ${1:-10} -f cms-claim-operations-celery; }; f'
-alias payclogs='f() { docker logs --tail ${1:-10} -f cms-payment-service-celery; }; f'
-alias caslogs='f() { docker logs --tail ${1:-10} -f cms-assessment-service; }; f'
-alias opslogs='f() { docker logs --tail ${1:-10} -f cms-claim-operations; }; f'
-alias paylogs='f() { docker logs --tail ${1:-10} -f cms-payment-service; }; f'
-alias casclogs='f() { docker logs --tail ${1:-10} -f cms-assessment-service-celery; }; f'
-alias auditlogs='f() { docker logs --tail ${1:-10} -f cms-audit-log; }; f'
-alias cmsclogs='f() { docker logs --tail ${1:-10} -f registration-docker-celery; }; f'
-alias cmslogs='f() { docker logs --tail ${1:-10} -f claim-management-system; }; f'
-alias jobberlogs='f() { docker logs --tail ${1:-10} -f cms-claim-jobber; }; f'
+alias opsclogs='f() {sudo docker logs --tail ${1:-10} -f cms-claim-operations-celery; }; f'
+alias payclogs='f() {sudo docker logs --tail ${1:-10} -f cms-payment-service-celery; }; f'
+alias caslogs='f() {sudo docker logs --tail ${1:-10} -f cms-assessment-service; }; f'
+alias opslogs='f() {sudo docker logs --tail ${1:-10} -f cms-claim-operations; }; f'
+alias paylogs='f() {sudo docker logs --tail ${1:-10} -f cms-payment-service; }; f'
+alias casclogs='f() {sudo docker logs --tail ${1:-10} -f cms-assessment-service-celery; }; f'
+alias auditlogs='f() {sudo docker logs --tail ${1:-10} -f cms-audit-log; }; f'
+alias cmsclogs='f() {sudo docker logs --tail ${1:-10} -f registration-docker-celery; }; f'
+alias cmslogs='f() {sudo docker logs --tail ${1:-10} -f claim-management-system; }; f'
+alias jobberlogs='f() {sudo docker logs --tail ${1:-10} -f cms-claim-jobber; }; f'
 
-alias auditrestart='docker restart cms-audit-log'
-alias casrestart='docker restart cms-assessment-service-celery && docker restart cms-assessment-service'
-alias cmsrestart='docker restart registration-docker-celery && docker restart claim-management-system'
-alias opsrestart='docker restart cms-claim-operations-celery && docker restart cms-claim-operations'
-alias payrestart='docker restart cms-payment-service-celery && docker restart cms-payment-service'
-alias jobberrestart='docker restart cms-claim-jobber'
+alias auditrestart='sudo docker restart cms-audit-log'
+alias casrestart='sudo docker restart cms-assessment-service-celery && sudo docker restart cms-assessment-service'
+alias cmsrestart='sudo docker restart registration-docker-celery && sudo docker restart claim-management-system'
+alias opsrestart='sudo docker restart cms-claim-operations-celery && sudo docker restart cms-claim-operations'
+alias payrestart='sudo docker restart cms-payment-service-celery && sudo docker restart cms-payment-service'
+alias jobberrestart='sudo docker restart cms-claim-jobber'
 
-alias auditrestart='docker stop cms-audit-log'
-alias casstop='docker stop cms-assessment-service-celery && docker stop cms-assessment-service'
-alias cmsstop='docker stop registration-docker-celery && docker stop claim-management-system'
-alias opsstop='docker stop cms-claim-operations-celery && docker stop cms-claim-operations'
-alias paystop='docker stop cms-payment-service-celery && docker stop cms-payment-service'
-alias jobberstop='docker stop cms-claim-jobber'
+alias auditrestart='sudo docker stop cms-audit-log'
+alias casstop='sudo docker stop cms-assessment-service-celery && sudo docker stop cms-assessment-service'
+alias cmsstop='sudo docker stop registration-docker-celery && sudo docker stop claim-management-system'
+alias opsstop='sudo docker stop cms-claim-operations-celery && sudo docker stop cms-claim-operations'
+alias paystop='sudo docker stop cms-payment-service-celery && sudo docker stop cms-payment-service'
+alias jobberstop='sudo docker stop cms-claim-jobber'
 
 
 alias opsclogsfile='sudo docker logs --tail 20000 cms-claim-operations-celery >& ~/logs/cms-claim-operations-celery_$(date +\%d\%m\%Y_\%H\%M\%S).log'
@@ -79,6 +79,9 @@ alias sb-staar='cd /home/rushabhsr/applications/pulse-api && npm run dev'
 alias qassh='sshpass -p "2YNyKp^'\''FTP+:F+A" ssh cms-admin@172.31.0.19'
 alias uatssh='sshpass -p "2YNyKp^'\''FTP+:F+A" ssh cms-admin@10.226.241.35'
 
+delkeys() {
+  redis-cli --scan --pattern "$1" | xargs redis-cli del
+}
 
 mrprod() {
   glab mr create -s "${2:-$(git rev-parse --abbrev-ref HEAD)}" --target-branch production --title "$1-$(date +%d%m%Y)-RS" -d "$1" -y
