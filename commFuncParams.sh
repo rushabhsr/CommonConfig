@@ -48,3 +48,18 @@ alias sb-horilla="cd ${APPS_DIR}/horilla && sudo docker-compose up"
 alias sb-hrms="cd ~/applications/hrms/docker/ && sudo docker-compose up"
 alias gbDexcept='f(){ git branch --format="%(refname:short)" | grep -vE "($(IFS="|"; echo "$*"))" | grep -v "$(git rev-parse --abbrev-ref HEAD)" | xargs -r git branch -D; }; f'
 alias dockerclean="sudo docker system prune -a --volumes --force"
+alias lstree='find . -type d | while read dir; do echo "${dir}"; ls -p "$dir" | grep -v / | sed "s/^/  ├── /"; done'
+
+alias init-react-structure='mkdir -p src/{app/{router,context,hooks,config},components/{layout,common,auth},features/{auth/pages,dashboard/{admin,user}},pages,assets,styles,utils} && touch \
+src/app/router/AppRouter.jsx \
+src/app/context/AuthContext.jsx \
+src/app/hooks/useAuth.js \
+src/app/config/roles.js \
+src/features/auth/pages/Login.jsx \
+src/features/dashboard/admin/AdminDashboard.jsx \
+src/features/dashboard/user/UserDashboard.jsx \
+src/pages/NotFound.jsx \
+src/pages/Unauthorized.jsx \
+src/main.jsx \
+src/index.css'
+
