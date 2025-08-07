@@ -3,6 +3,28 @@ function DEBUG(){
 }
 export DEBUG
 
+dockerclean() {
+  if [ -n "$1" ]; then
+    echo "Deleting containers, images, and volumes starting with: $1"
+
+    # Remove all containers where image name or container name contains $1
+    docker ps -a --format '{{.ID}} {{.Image}} {{.Names}}' | grep "$1" | awk '{print $1}' | xargs -r docker rm -f
+
+    # Remove images where name starts with $1
+    docker images --format '{{.Repository}}:{{.Tag}} {{.ID}}' | grep "^$1" | awk '{print $2}' | xargs -r docker rmi -f
+
+    # Remove volumes starting with $1
+    docker volume ls --format '{{.Name}}' | grep "^$1" | xargs -r docker volume rm
+  else
+    echo "Running full system prune..."
+    sudo docker system prune -a --volumes --force
+  fi
+}
+
+
+
+
+
 if ! pgrep -u "$USER" ssh-agent > /dev/null; then
     eval "$(ssh-agent -s)"
 fi
@@ -45,7 +67,6 @@ alias sf='if [ "$(basename "$PWD")" != "frontend" ]; then cd frontend; fi && rd'
 alias sb='if [ "$(basename "$PWD")" != "backend" ]; then cd backend; fi && rd'
 
 alias gbDexcept='f(){ git branch --format="%(refname:short)" | grep -vE "($(IFS="|"; echo "$*"))" | grep -v "$(git rev-parse --abbrev-ref HEAD)" | xargs -r git branch -D; }; f'
-alias dockerclean="sudo docker system prune -a --volumes --force"
 alias lstree='find . -type d | while read dir; do echo "${dir}"; ls -p "$dir" | grep -v / | sed "s/^/  ├── /"; done'
 
 alias init-react-structure='mkdir -p src/{app/{router,context,hooks,config},components/{layout,common,auth},features/{auth/pages,dashboard/{admin,user}},pages,assets,styles,utils} && touch \
@@ -65,3 +86,4 @@ alias sb-indi="cd ${APPS_DIR}/indi-wheel/backend && sudo docker-compose up"
 alias sb-horilla="cd ${APPS_DIR}/horilla && sudo docker-compose up"
 alias sb-hrms="cd ${APPS_DIR}/hrms/docker/ && sudo docker-compose up"
 alias sb-candidperks="cd ${APPS_DIR}/candidperks/backend && uvicorn app.main:app --reload --host 0.0.0.0 --port 8001"
+
