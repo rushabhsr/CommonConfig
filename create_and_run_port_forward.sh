@@ -47,7 +47,14 @@ netsh interface portproxy delete v4tov4 listenport=$Port listenaddress=$listenAd
 # Add forwarding rule
 netsh interface portproxy add v4tov4 listenaddress=$listenAddress listenport=$Port connectaddress=$WslIP connectport=$Port
 
-Write-Host "✅ Port $Port is now forwarded:"
+# === Add firewall rule to allow incoming traffic on this port ===
+$ruleName = "WSL Port $Port"
+# Delete existing rule if it exists
+netsh advfirewall firewall delete rule name="$ruleName" protocol=TCP localport=$Port profile=Private 2>$null
+# Add new rule
+netsh advfirewall firewall add rule name="$ruleName" dir=in action=allow protocol=TCP localport=$Port profile=Private
+
+Write-Host "✅ Port $Port is now forwarded and firewall rule added:"
 Write-Host "    From: http://${winIP}:$Port"
 Write-Host "    To:   http://${WslIP}:$Port (inside WSL)"
 Write-Host ""
