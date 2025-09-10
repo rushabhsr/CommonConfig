@@ -108,6 +108,9 @@ code-cv() {
     
     code $HOME/applications/cms-payment-service &
     wait $!
+
+    code $HOME/applications/edel-claim-jobber &
+    wait $!
 }
 
 

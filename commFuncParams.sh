@@ -87,3 +87,12 @@ alias sb-horilla="cd ${APPS_DIR}/horilla && sudo docker-compose up"
 alias sb-hrms="cd ${APPS_DIR}/hrms/docker/ && sudo docker-compose up"
 alias sb-candidperks="cd ${APPS_DIR}/candidperks/backend && uvicorn app.main:app --reload --host 0.0.0.0 --port 8001"
 
+alias dockerclean="sudo docker system prune -a --volumes --force"
+
+redis-clear() {
+  local pattern="*"
+  if [ -n "$1" ]; then
+    pattern="*$1*"
+  fi
+  redis-cli --scan --pattern "$pattern" | xargs -r redis-cli del
+}
