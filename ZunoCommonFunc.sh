@@ -119,7 +119,7 @@ delkeys() {
 }
 
 mrprod() {
-  glab mr create -s "${2:-$(git rev-parse --abbrev-ref HEAD)}" --target-branch production --title "$1-$(date +%d%m%Y)" -d "$1" -y
+  glab mr create -s "${2:-$(git rev-parse --abbrev-ref HEAD)}" --target-branch production --title "$1" -d "$1" -y
 }
 
 mruat() {
@@ -134,3 +134,6 @@ mrdev() {
   glab mr create -s "${2:-$(git rev-parse --abbrev-ref HEAD)}" --target-branch development --title "$1-$(date +%d%m%Y)-RS" -d "$1" -y
 }
 
+mrcreate() {
+  glab mr create -s "$(git rev-parse --abbrev-ref HEAD)" --target-branch "$2" --title "$1" -d "$1" -y
+}

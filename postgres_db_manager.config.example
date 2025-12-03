@@ -1,0 +1,25 @@
+# Database Manager Configuration Example
+# Copy this file to db_manager.config and customize for your environment
+
+# Remote Database Connection (Source)
+PG_USER_BACKUP="your_backup_user"
+PG_PASSWORD_BACKUP="your_backup_password"
+PG_HOST_BACKUP="your-remote-host.amazonaws.com"
+
+# Local Database Connection (Target)
+PG_USER_LOCAL="your_local_user"
+PG_PASSWORD_LOCAL="your_local_password"
+PG_HOST_LOCAL="localhost"
+PG_DB_ADMIN="postgres"
+
+# Paths
+BACKUP_DIR="/path/to/your/db_dumps"
+ARCHIVE_DIR="/path/to/your/db_dumps/archives"
+
+# Database Mappings (remote_db:local_db)
+# Format: REMOTE_DB_NAME:LOCAL_DB_NAME
+DATABASE_MAPPINGS=(
+    "remote_db1:local_db1"
+    "remote_db2:local_db2"
+    "remote_db3:local_db3"
+)
