@@ -1,0 +1,26 @@
+# ClickHouse Database Manager Configuration Example
+# Copy this file to clickhouse_db_manager.config and customize for your environment
+
+# Remote ClickHouse Connection (Source)
+CH_USER_BACKUP="your_backup_user"
+CH_PASSWORD_BACKUP="your_backup_password"
+CH_HOST_BACKUP="your-remote-clickhouse-host.com"
+CH_PORT_BACKUP="9000"
+
+# Local ClickHouse Connection (Target)
+CH_USER_LOCAL="your_local_user"
+CH_PASSWORD_LOCAL="your_local_password"
+CH_HOST_LOCAL="localhost"
+CH_PORT_LOCAL="9000"
+
+# Paths
+BACKUP_DIR="/path/to/your/clickhouse_dumps"
+ARCHIVE_DIR="/path/to/your/clickhouse_dumps/archives"
+
+# Database Mappings (remote_db:local_db)
+# Format: REMOTE_DB_NAME:LOCAL_DB_NAME
+DATABASE_MAPPINGS=(
+    "remote_db1:local_db1"
+    "remote_db2:local_db2"
+    "remote_db3:local_db3"
+)

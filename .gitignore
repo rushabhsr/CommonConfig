@@ -17,3 +17,4 @@
 *.disabled
 .idea/
 *.tmp
+*.config
