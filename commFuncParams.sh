@@ -21,10 +21,6 @@ dockerclean() {
   fi
 }
 
-
-
-
-
 if ! pgrep -u "$USER" ssh-agent > /dev/null; then
     eval "$(ssh-agent -s)"
 fi
@@ -95,4 +91,83 @@ redis-clear() {
     pattern="*$1*"
   fi
   redis-cli --scan --pattern "$pattern" | xargs -r redis-cli del
+}
+
+spillover() {
+    if [ $# -eq 0 ]; then
+        echo "Usage: spillover <previous_spillover_mins> <start_time> [end_time] [session_mins]"
+        echo "Example: spillover 90 \"14:53\""
+        echo "         spillover 90 \"14:53\" \"16:30\""
+        echo "         spillover 90 \"14:53\" \"16:30\" 120"
+        return 1
+    fi
+
+    local previous_spillover_mins="$1"
+    local start_time="$2"
+    local end_time="${3:-$(date +"%H:%M")}"
+    local session_mins="${4:-120}"
+
+    # Convert times to minutes since midnight (handle leading zeros)
+    local end_hour=$(echo "$end_time" | cut -d: -f1 | sed 's/^0*//')
+    local end_min=$(echo "$end_time" | cut -d: -f2 | sed 's/^0*//')
+    local start_hour=$(echo "$start_time" | cut -d: -f1 | sed 's/^0*//')
+    local start_min=$(echo "$start_time" | cut -d: -f2 | sed 's/^0*//')
+    
+    # Handle empty strings (when time is 00)
+    [ -z "$end_hour" ] && end_hour=0
+    [ -z "$end_min" ] && end_min=0
+    [ -z "$start_hour" ] && start_hour=0
+    [ -z "$start_min" ] && start_min=0
+
+    local end_mins=$((end_hour * 60 + end_min))
+    local prev_mins=$((start_hour * 60 + start_min))
+
+    # If previous time is greater than current time, assume it's from yesterday
+    if [ $prev_mins -gt $end_mins ]; then
+        prev_mins=$((prev_mins - 1440))
+    fi
+
+    # Calculate night and day minutes separately
+    local night_mins=0
+    local day_mins=0
+    
+    # Night hours: 22:00-08:00 (10pm-8am)
+    local night_start=1320  # 22:00 in minutes
+    local night_end=480     # 08:00 in minutes
+
+    # Calculate minutes in each period
+    local current_mins=$prev_mins
+    while [ $current_mins -lt $end_mins ]; do
+        # Check if current minute is in night hours
+        local hour_mins=$((current_mins % 1440))
+        if [ $hour_mins -ge $night_start ] || [ $hour_mins -lt $night_end ]; then
+            night_mins=$((night_mins + 1))
+        else
+            day_mins=$((day_mins + 1))
+        fi
+        
+        current_mins=$((current_mins + 1))
+    done
+
+    # Apply 1.5x multiplier only to night minutes
+    local night_weighted=$((night_mins * 3 / 2))
+    local diff_mins=$((day_mins + night_weighted))
+
+    local new_total=$((previous_spillover_mins + diff_mins))
+
+    # Calculate sessions and spillover
+    local sessions=$((new_total / session_mins))
+    local spillover_mins=$((new_total % session_mins))
+
+    if [ $sessions -eq 0 ]; then
+        echo "Spillover ~ ${spillover_mins}mins"
+    else
+        if [ $sessions -eq 1 ]; then
+            echo "Please drop a message in the group after that"
+        else
+            echo "Please drop ${sessions} messages in the group after that"
+        fi
+        echo "Spillover ~ ${spillover_mins}mins"
+    fi
+    echo "Start Time: $start_time, End Time: $end_time (Day: ${day_mins}min, Night: ${night_mins}min)"
 }
