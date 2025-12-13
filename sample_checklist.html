@@ -113,6 +113,43 @@
             font-size: 0.9em;
         }
         
+        .code-container {
+            position: relative;
+            display: inline-block;
+            padding-right: 35px;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }
+        
+        .copy-btn:hover {
+            opacity: 1;
+            background: #2980b9;
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .copy-btn.copied {
+            background: #27ae60;
+            transform: translateY(-50%) scale(1.2);
+        }
+        
+        .code-container:hover .copy-btn {
+            opacity: 1;
+        }
+        
         @media (max-width: 768px) {
             body { padding: 10px; }
             .info-grid { grid-template-columns: 1fr; }
@@ -169,6 +206,41 @@
                 location.reload();
             }
         }
+        
+            function copyToClipboard(text) {
+                const btn = event.target;
+                const originalText = btn.textContent;
+
+                navigator.clipboard.writeText(text).then(() => {
+                    // Success feedback
+                    btn.textContent = '✓';
+                    btn.classList.add('copied');
+
+                    // Reset after 1.5 seconds
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.classList.remove('copied');
+                    }, 1500);
+                }).catch(() => {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+
+                    // Success feedback
+                    btn.textContent = '✓';
+                    btn.classList.add('copied');
+
+                    // Reset after 1.5 seconds
+                    setTimeout(() => {
+                        btn.textContent = originalText;
+                        btn.classList.remove('copied');
+                    }, 1500);
+                });
+            }
         
         window.onload = loadProgress;
     </script>
@@ -289,25 +361,51 @@
     <h2>⚡ Management Commands</h2>
     <div class="checkbox-item">
         <input type="checkbox" id="c1" onchange="updateProgress()">
-        <label for="c1"><code>npm run migrate</code></label>
+        <label for="c1">
+            <div class="code-container">
+                <code>npm run migrate</code>
+                <button class="copy-btn" onclick="copyToClipboard('npm run migrate')">📋</button>
+            </div>
+        </label>
     </div>
     <div class="checkbox-item">
         <input type="checkbox" id="c2" onchange="updateProgress()">
-        <label for="c2"><code>npm run seed-data</code></label>
+        <label for="c2">
+            <div class="code-container">
+                <code>npm run seed-data</code>
+                <button class="copy-btn" onclick="copyToClipboard('npm run seed-data')">📋</button>
+            </div>
+        </label>
     </div>
     <div class="checkbox-item">
         <input type="checkbox" id="c3" onchange="updateProgress()">
-        <label for="c3"><code>python manage.py collectstatic</code></label>
+        <label for="c3">
+            <div class="code-container">
+                <code>python manage.py collectstatic</code>
+                <button class="copy-btn" onclick="copyToClipboard('python manage.py collectstatic')">📋</button>
+            </div>
+        </label>
     </div>
     
     <h3>Background Commands</h3>
     <div class="checkbox-item">
         <input type="checkbox" id="b1" onchange="updateProgress()">
-        <label for="b1"><code>nohup python manage.py process_queue > queue.log 2>&1 &</code></label>
+        <label for="b1">
+            <div class="code-container">
+                <code>nohup python manage.py process_queue > queue.log 2>&1 &</code>
+                <button class="copy-btn"
+                    onclick="copyToClipboard('nohup python manage.py process_queue > queue.log 2>&1 &')">📋</button>
+            </div>
+        </label>
     </div>
     <div class="checkbox-item">
         <input type="checkbox" id="b2" onchange="updateProgress()">
-        <label for="b2"><code>nohup npm run worker > worker.log 2>&1 &</code></label>
+        <label for="b2">
+            <div class="code-container">
+                <code>nohup npm run worker > worker.log 2>&1 &</code>
+                <button class="copy-btn" onclick="copyToClipboard('nohup npm run worker > worker.log 2>&1 &')">📋</button>
+            </div>
+        </label>
     </div>
     
     <h2>📝 Additional Tasks</h2>

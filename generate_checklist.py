@@ -142,6 +142,43 @@ def generate_html(data, project_name):
             font-size: 0.9em;
         }}
         
+        .code-container {{
+            position: relative;
+            display: inline-block;
+            padding-right: 35px;
+        }}
+        
+        .copy-btn {{
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+        }}
+        
+        .copy-btn:hover {{
+            opacity: 1;
+            background: #2980b9;
+            transform: translateY(-50%) scale(1.1);
+        }}
+        
+        .copy-btn.copied {{
+            background: #27ae60;
+            transform: translateY(-50%) scale(1.2);
+        }}
+        
+        .code-container:hover .copy-btn {{
+            opacity: 1;
+        }}
+        
         @media (max-width: 768px) {{
             body {{ padding: 10px; }}
             .info-grid {{ grid-template-columns: 1fr; }}
@@ -197,6 +234,41 @@ def generate_html(data, project_name):
                 localStorage.removeItem('deploymentChecklist');
                 location.reload();
             }}
+        }}
+        
+        function copyToClipboard(text) {{
+            const btn = event.target;
+            const originalText = btn.textContent;
+            
+            navigator.clipboard.writeText(text).then(() => {{
+                // Success feedback
+                btn.textContent = '✓';
+                btn.classList.add('copied');
+                
+                // Reset after 1.5 seconds
+                setTimeout(() => {{
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }}, 1500);
+            }}).catch(() => {{
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                // Success feedback
+                btn.textContent = '✓';
+                btn.classList.add('copied');
+                
+                // Reset after 1.5 seconds
+                setTimeout(() => {{
+                    btn.textContent = originalText;
+                    btn.classList.remove('copied');
+                }}, 1500);
+            }});
         }}
         
         window.onload = loadProgress;
@@ -331,10 +403,16 @@ def generate_html(data, project_name):
     <h2>⚡ Management Commands</h2>'''
         
         for i, cmd in enumerate(data['commands'], 1):
+            escaped_cmd = cmd.replace("'", "\\'")
             html += f'''
     <div class="checkbox-item">
         <input type="checkbox" id="c{i}" onchange="updateProgress()">
-        <label for="c{i}"><code>{cmd}</code></label>
+        <label for="c{i}">
+            <div class="code-container">
+                <code>{cmd}</code>
+                <button class="copy-btn" onclick="copyToClipboard('{escaped_cmd}')">📋</button>
+            </div>
+        </label>
     </div>'''
     
     # Background commands section
@@ -344,10 +422,16 @@ def generate_html(data, project_name):
     <h3>Background Commands</h3>'''
         
         for i, cmd in enumerate(data['bg_commands'], 1):
+            escaped_cmd = cmd.replace("'", "\\'")
             html += f'''
     <div class="checkbox-item">
         <input type="checkbox" id="b{i}" onchange="updateProgress()">
-        <label for="b{i}"><code>{cmd}</code></label>
+        <label for="b{i}">
+            <div class="code-container">
+                <code>{cmd}</code>
+                <button class="copy-btn" onclick="copyToClipboard('{escaped_cmd}')">📋</button>
+            </div>
+        </label>
     </div>'''
     
     # Additional tasks section
