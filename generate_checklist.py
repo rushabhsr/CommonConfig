@@ -341,6 +341,20 @@ def generate_html(data, project_name):
         <label for="tests-pass">All tests passing</label>
     </div>'''
     
+    # Production PRs section
+    if data.get('production_prs'):
+        html += '''
+    
+    <h3>Production PRs</h3>'''
+        
+        for i, pr_url in enumerate(data['production_prs'], 1):
+            pr_number = pr_url.split('/')[-1] if '/' in pr_url else f'PR-{i}'
+            html += f'''
+    <div class="checkbox-item">
+        <input type="checkbox" id="pr{i}" onchange="updateProgress()">
+        <label for="pr{i}"><a href="{pr_url}" target="_blank">#{pr_number}</a> - Merged and verified</label>
+    </div>'''
+    
     # Services deployment section
     if data.get('services'):
         html += '''
@@ -524,6 +538,15 @@ def generate_markdown(data, project_name):
 - [ ] Database/system backup created
 '''
     
+    # Production PRs section
+    if data.get('production_prs'):
+        md += '''
+### Production PRs
+'''
+        for i, pr_url in enumerate(data['production_prs'], 1):
+            pr_number = pr_url.split('/')[-1] if '/' in pr_url else f'PR-{i}'
+            md += f'- [ ] [#{pr_number}]({pr_url}) - Merged and verified\n'
+    
     md += '\n'
     
     # Services deployment section
@@ -633,7 +656,7 @@ def main():
                 type_val = row['type'].strip()
                 values = row['values'].strip()
                 
-                if type_val in ['features', 'services', 'health_checks', 'commands', 'bg_commands', 'tasks', 'pre_deployment', 'post_deployment']:
+                if type_val in ['features', 'services', 'health_checks', 'commands', 'bg_commands', 'tasks', 'pre_deployment', 'post_deployment', 'production_prs']:
                     data[type_val] = [v.strip() for v in values.split(',') if v.strip()]
                 else:
                     data[type_val] = values
