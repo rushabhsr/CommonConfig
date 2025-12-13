@@ -1,0 +1,15 @@
+type,values
+project_name,Your Project Name
+release_date,YYYY-MM-DD
+environment,Production
+deployed_by,Your Team Name
+deployment_time,HH:MM AM/PM Timezone
+release_notes,Brief description of changes in this release
+features,"FEATURE-001: New user authentication,FEATURE-002: Enhanced dashboard,FEATURE-003: Bug fixes and improvements"
+pre_deployment,"Code reviewed and approved,All tests passing,Database/system backup created,Rollback plan prepared,Environment variables updated,UAT environment logs checked"
+services,"API Service,Database Service,Frontend Service,Background Worker Service"
+post_deployment,"Application starts successfully,Core functionality tested,Performance within acceptable limits,Logs checked for errors"
+health_checks,"https://your-domain.com/health,https://your-domain.com/api/status,https://your-domain.com/ready"
+commands,"npm run migrate,npm run seed-data,python manage.py collectstatic"
+bg_commands,"nohup python manage.py process_queue > queue.log 2>&1 &,nohup npm run worker > worker.log 2>&1 &"
+tasks,"Update environment variables,Clear application cache,Restart load balancer,Update DNS records,Notify stakeholders"

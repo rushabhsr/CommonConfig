@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Project Name - Deployment Checklist</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        h2 {
+            color: #34495e;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        
+        h3 {
+            color: #7f8c8d;
+            margin-top: 25px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .info-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #2c3e50;
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .checkbox-item {
+            margin: 12px 0;
+            padding: 8px;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        
+        .checkbox-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        input[type="checkbox"] {
+            margin-right: 12px;
+            transform: scale(1.3);
+            cursor: pointer;
+        }
+        
+        label {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .completed {
+            text-decoration: line-through;
+            color: #27ae60;
+            background-color: #d5f4e6;
+        }
+        
+        .status-section {
+            background: linear-gradient(135deg, #ecf0f1, #bdc3c7);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+    <script>
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const labels = document.querySelectorAll('label');
+            
+            let completed = 0;
+            
+            labels.forEach((label, index) => {
+                if (checkboxes[index] && checkboxes[index].checked) {
+                    label.classList.add('completed');
+                    label.parentElement.classList.add('completed');
+                    completed++;
+                } else {
+                    label.classList.remove('completed');
+                    label.parentElement.classList.remove('completed');
+                }
+            });
+            
+            const progress = (completed / checkboxes.length) * 100;
+            const progressFill = document.querySelector('.progress-fill');
+            const progressText = document.querySelector('.progress-text');
+            
+            if (progressFill) {
+                progressFill.style.width = progress + '%';
+            }
+            if (progressText) {
+                progressText.textContent = `${completed} of ${checkboxes.length} tasks completed (${Math.round(progress)}%)`;
+            }
+            
+            const state = Array.from(checkboxes).map(cb => cb.checked);
+            localStorage.setItem('deploymentChecklist', JSON.stringify(state));
+        }
+        
+        function loadProgress() {
+            const saved = localStorage.getItem('deploymentChecklist');
+            if (saved) {
+                const state = JSON.parse(saved);
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach((cb, index) => {
+                    if (state[index]) cb.checked = true;
+                });
+            }
+            updateProgress();
+        }
+        
+        function clearProgress() {
+            if (confirm('Are you sure you want to clear all progress?')) {
+                localStorage.removeItem('deploymentChecklist');
+                location.reload();
+            }
+        }
+        
+        window.onload = loadProgress;
+    </script>
+</head>
+<body>
+    <h1>Your Project Name - Deployment Checklist</h1>
+    
+    <div class="progress-bar">
+        <div class="progress-fill"></div>
+    </div>
+    <div class="progress-text" style="text-align: center; margin-bottom: 20px;">0 of 0 tasks completed (0%)</div>
+    
+    <h2>📋 Release Information</h2>
+    <div class="info-grid">
+        <div class="info-item">
+            <span class="info-label">Release Date</span>
+            YYYY-MM-DD
+        </div>
+        <div class="info-item">
+            <span class="info-label">Environment</span>
+            Production
+        </div>
+        <div class="info-item">
+            <span class="info-label">Deployed By</span>
+            Your Team Name
+        </div>
+        <div class="info-item">
+            <span class="info-label">Deployment Time</span>
+            HH:MM AM/PM Timezone
+        </div>
+    </div>
+    
+    <h2>🚀 Changes Included</h2>
+    <ul>
+        <li>FEATURE-001: New user authentication</li>
+        <li>FEATURE-002: Enhanced dashboard</li>
+        <li>FEATURE-003: Bug fixes and improvements</li>
+    </ul>
+    
+    <h2>✅ Pre-Deployment Checklist</h2>
+    <h3>Code Preparation</h3>
+    <div class="checkbox-item">
+        <input type="checkbox" id="pre1" onchange="updateProgress()">
+        <label for="pre1">Code reviewed and approved</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="pre2" onchange="updateProgress()">
+        <label for="pre2">All tests passing</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="pre3" onchange="updateProgress()">
+        <label for="pre3">Database/system backup created</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="pre4" onchange="updateProgress()">
+        <label for="pre4">Rollback plan prepared</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="pre5" onchange="updateProgress()">
+        <label for="pre5">Environment variables updated</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="pre6" onchange="updateProgress()">
+        <label for="pre6">UAT environment logs checked</label>
+    </div>
+    
+    <h2>🔧 Deployment Steps</h2>
+    <h3>Service Deployment</h3>
+    <div class="checkbox-item">
+        <input type="checkbox" id="s1" onchange="updateProgress()">
+        <label for="s1">Deploy API Service</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="s2" onchange="updateProgress()">
+        <label for="s2">Deploy Database Service</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="s3" onchange="updateProgress()">
+        <label for="s3">Deploy Frontend Service</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="s4" onchange="updateProgress()">
+        <label for="s4">Deploy Background Worker Service</label>
+    </div>
+    
+    <h3>Post-Deployment Verification</h3>
+    <div class="checkbox-item">
+        <input type="checkbox" id="post1" onchange="updateProgress()">
+        <label for="post1">Application starts successfully</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="post2" onchange="updateProgress()">
+        <label for="post2">Core functionality tested</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="post3" onchange="updateProgress()">
+        <label for="post3">Performance within acceptable limits</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="post4" onchange="updateProgress()">
+        <label for="post4">Logs checked for errors</label>
+    </div>
+    
+    <h2>🏥 Health Checks</h2>
+    <div class="checkbox-item">
+        <input type="checkbox" id="h1" onchange="updateProgress()">
+        <label for="h1">https://your-domain.com/health</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="h2" onchange="updateProgress()">
+        <label for="h2">https://your-domain.com/api/status</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="h3" onchange="updateProgress()">
+        <label for="h3">https://your-domain.com/ready</label>
+    </div>
+    
+    <h2>⚡ Management Commands</h2>
+    <div class="checkbox-item">
+        <input type="checkbox" id="c1" onchange="updateProgress()">
+        <label for="c1"><code>npm run migrate</code></label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="c2" onchange="updateProgress()">
+        <label for="c2"><code>npm run seed-data</code></label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="c3" onchange="updateProgress()">
+        <label for="c3"><code>python manage.py collectstatic</code></label>
+    </div>
+    
+    <h3>Background Commands</h3>
+    <div class="checkbox-item">
+        <input type="checkbox" id="b1" onchange="updateProgress()">
+        <label for="b1"><code>nohup python manage.py process_queue > queue.log 2>&1 &</code></label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="b2" onchange="updateProgress()">
+        <label for="b2"><code>nohup npm run worker > worker.log 2>&1 &</code></label>
+    </div>
+    
+    <h2>📝 Additional Tasks</h2>
+    <div class="checkbox-item">
+        <input type="checkbox" id="t1" onchange="updateProgress()">
+        <label for="t1">Update environment variables</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="t2" onchange="updateProgress()">
+        <label for="t2">Clear application cache</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="t3" onchange="updateProgress()">
+        <label for="t3">Restart load balancer</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="t4" onchange="updateProgress()">
+        <label for="t4">Update DNS records</label>
+    </div>
+    <div class="checkbox-item">
+        <input type="checkbox" id="t5" onchange="updateProgress()">
+        <label for="t5">Notify stakeholders</label>
+    </div>
+    
+    <h2>📄 Release Notes</h2>
+    <p><em>Brief description of changes in this release</em></p>
+    
+    <div class="status-section">
+        <h2>🎯 Deployment Status</h2>
+        <div style="margin: 20px 0;">
+            <div class="checkbox-item">
+                <input type="radio" id="success" name="status">
+                <label for="success">✅ Deployment Successful</label>
+            </div>
+            <div class="checkbox-item">
+                <input type="radio" id="failed" name="status">
+                <label for="failed">❌ Deployment Failed</label>
+            </div>
+            <div class="checkbox-item">
+                <input type="radio" id="rollback" name="status">
+                <label for="rollback">🔄 Rolled Back</label>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #bdc3c7;">
+            <strong>Final Sign-off:</strong> _________________ &nbsp;&nbsp;&nbsp; <strong>Date:</strong> _________
+        </div>
+        
+        <div style="margin-top: 15px; text-align: center;">
+            <button onclick="clearProgress()" style="background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">
+                Clear All Progress
+            </button>
+        </div>
+    </div>
+</body>
+</html>
