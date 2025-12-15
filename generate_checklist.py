@@ -352,7 +352,7 @@ def generate_html(data, project_name):
             html += f'''
     <div class="checkbox-item">
         <input type="checkbox" id="pr{i}" onchange="updateProgress()">
-        <label for="pr{i}"><a href="{pr_url}" target="_blank">#{pr_number}</a> - Merged and verified</label>
+        <label for="pr{i}"><a href="{pr_url}" target="_blank" title="{project_name} #{pr_number}">{project_name} #{pr_number}</a> - Merged and verified</label>
     </div>'''
     
     # Services deployment section
