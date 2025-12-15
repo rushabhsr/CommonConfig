@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A4 Landscape Habit & Goals Planner</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+
+    .inputs {
+      margin-bottom: 20px;
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #f9f9f9;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      align-items: flex-start;
+    }
+
+    .input-group {
+      flex: 1;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .inputs input, .inputs textarea, .inputs select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .inputs input:focus, .inputs textarea:focus, .inputs select:focus {
+      outline: none;
+      border-color: #007cba;
+      box-shadow: 0 0 0 2px rgba(0,124,186,0.1);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      justify-content: center;
+    }
+
+    .inputs button {
+      padding: 12px 24px;
+      background: #007cba;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+
+    .inputs button:hover {
+      background: #005a87;
+    }
+
+    .error {
+      color: red;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+
+    @media print {
+      .inputs { display: none; }
+      body { margin: 0; font-size: 10px; }
+      table { margin-bottom: 5px; }
+      th, td { font-size: 10px; }
+      .calendar td { height: 35px; padding: 3px; font-size: 16px; }
+      h4 { margin: 5px 0; font-size: 14px; }
+      .task-cell { height: 10px; }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+      table-layout: fixed;
+    }
+
+    .habit-table {
+      table-layout: fixed;
+    }
+
+    th,
+    td {
+      border: 1px solid #444;
+      text-align: center;
+      padding: 6px 0px;
+      font-size: 12px;
+    }
+
+    th {
+      background: #f0f0f0;
+    }
+
+    input[type="checkbox"] {
+      transform: scale(1.2);
+      margin: 3px;
+    }
+
+    @page {
+      size: A4 landscape;
+      margin: 10mm;
+    }
+
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 2mm;
+      }
+      .inputs { display: none; }
+      body { margin: 0; font-size: 14px; }
+      table { margin-bottom: 8px; }
+      th, td { padding: 4px; font-size: 12px; }
+      .calendar td { height: 25px; padding: 4px; font-size: 18px; }
+      h4 { margin: 0 0 5px 0; font-size: 18px; }
+      .task-cell { height: 24px; }
+    }
+
+    .calendar td {
+      height: 25px;
+      vertical-align: top;
+      font-size: 14px;
+      font-weight: bold;
+      text-align: left;
+      padding: 6px;
+    }
+
+    .calendar .other-month {
+      color: #aaa;
+    }
+
+    h2,
+    h3,
+    h4 {
+      text-align: center;
+    }
+
+    .task-cell {
+      height: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="inputs">
+    <div class="input-row">
+      <div class="input-group">
+        <label>Name:</label>
+        <input type="text" id="userName" placeholder="Enter your name" required>
+        <div id="nameError" class="error"></div>
+      </div>
+      <div class="input-group">
+        <label>Month:</label>
+        <select id="monthSelect">
+          <option value="1">January</option>
+          <option value="2">February</option>
+          <option value="3">March</option>
+          <option value="4">April</option>
+          <option value="5">May</option>
+          <option value="6">June</option>
+          <option value="7">July</option>
+          <option value="8">August</option>
+          <option value="9">September</option>
+          <option value="10">October</option>
+          <option value="11">November</option>
+          <option value="12">December</option>
+        </select>
+      </div>
+      <div class="input-group">
+        <label>Year:</label>
+        <select id="yearSelect"></select>
+      </div>
+    </div>
+    <div class="input-row">
+      <div class="input-group">
+        <label>Daily Tasks (one per line):</label>
+        <textarea id="dailyTasks" rows="4" placeholder="Enter daily tasks, one per line"></textarea>
+        <div id="tasksError" class="error"></div>
+      </div>
+    </div>
+    <div class="button-group">
+      <button onclick="validateAndGenerate()">Generate Planner</button>
+      <button onclick="downloadPlanner()" id="downloadBtn" style="display:none; background:#28a745;">Download PDF</button>
+    </div>
+  </div>
+  
+  <div id="planner"></div>
+
+  <script>
+    function validateAndGenerate() {
+      const userName = document.getElementById("userName").value.trim();
+      const tasksInput = document.getElementById("dailyTasks").value.trim();
+      
+      document.getElementById("nameError").textContent = "";
+      document.getElementById("tasksError").textContent = "";
+      
+      let isValid = true;
+      
+      if (!userName) {
+        document.getElementById("nameError").textContent = "Name is required";
+        isValid = false;
+      }
+      
+      if (!tasksInput) {
+        document.getElementById("tasksError").textContent = "At least one daily task is required";
+        isValid = false;
+      }
+      
+      if (isValid) {
+        generatePlanner();
+      }
+    }
+
+    function daysInMonth(month, year) {
+      return new Date(year, month, 0).getDate();
+    }
+
+    function generatePlanner() {
+      const userName = document.getElementById("userName").value.trim();
+      const tasksInput = document.getElementById("dailyTasks").value.trim();
+      const tasks = tasksInput.split('\n').filter(task => task.trim() !== '');
+      const selectedMonth = parseInt(document.getElementById("monthSelect").value);
+      const selectedYear = parseInt(document.getElementById("yearSelect").value);
+      
+      const month = selectedMonth;
+      const year = selectedYear;
+      const habits = tasks;
+      const days = daysInMonth(month, year);
+      const monthName = new Date(year, month - 1).toLocaleString("en-US", { month: "long" });
+      let html = `<h4>${userName}'s ${monthName} ${year}</h4>`;
+
+      // Habit Tracker Table
+      const availableWidth = 100 - 15; // 100% - 15% for habit column
+      const dayColumnWidth = availableWidth / days;
+      html += `<style>
+        .habit-table th:first-child, .habit-table td:first-child { width: 10%; }
+        .habit-table th:not(:first-child), .habit-table td:not(:first-child) { width: ${dayColumnWidth}%; }
+      </style>`;
+      html += "<table class='habit-table'><tr><th>Habit</th>";
+      for (let d = 1; d <= days; d++) {
+        html += `<th>${d}</th>`;
+      }
+      html += "</tr>";
+      habits.forEach(habit => {
+        html += `<tr><td>${habit}</td>`;
+        for (let d = 1; d <= days; d++) {
+          const date = new Date(year, month - 1, d);
+          const dayOfWeek = date.getDay();
+          const isWeekend = dayOfWeek === 0 || dayOfWeek === 6; // Sunday or Saturday
+          const bgColor = isWeekend ? "background:#f8f8f8;" : "";
+          html += `<td style="${bgColor}"></td>`;
+        }
+        html += "</tr>";
+      });
+
+      html += "</table>";
+
+      // Mini Calendar
+      // const monthName = new Date(year, month - 1).toLocaleString("en-US", { month: "long" });
+      // html += `<h3>Rushabh's ${monthName} ${year}</h3>`;
+
+      html += `<table class='calendar'>`;
+      html += `<tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr>`;
+
+      const firstDay = new Date(year, month - 1, 1);
+      let startDay = firstDay.getDay();
+      if (startDay === 0) startDay = 7; // Sunday → 7
+
+      const prevMonthDays = daysInMonth(month - 1 === 0 ? 12 : month - 1, month - 1 === 0 ? year - 1 : year);
+      const totalCells = Math.ceil((days + startDay - 1) / 7) * 7;
+
+      let dayCounter = 1;
+      let nextMonthCounter = 1;
+
+      for (let i = 0; i < totalCells / 7; i++) {
+        html += "<tr>";
+        for (let j = 1; j <= 7; j++) {
+          const cellIndex = i * 7 + j;
+          if (cellIndex < startDay) {
+            const prevDay = prevMonthDays - (startDay - cellIndex) + 1;
+            const prevDate = new Date(year, month - 2, prevDay);
+            const dayName = prevDate.toLocaleString("en-US", { weekday: "long" });
+            html += `<td class='other-month'>${prevDay}</td>`;
+          } else if (dayCounter <= days) {
+            const date = new Date(year, month - 1, dayCounter);
+            const dayName = date.toLocaleString("en-US", { weekday: "long" });
+            html += `<td>${dayCounter}</td>`;
+            dayCounter++;
+          } else {
+            const nextDate = new Date(year, month, nextMonthCounter);
+            const dayName = nextDate.toLocaleString("en-US", { weekday: "long" });
+            html += `<td class='other-month'>${nextMonthCounter}</td>`;
+            nextMonthCounter++;
+          }
+        }
+        html += "</tr>";
+      }
+
+      html += "</table>";
+
+      // Productivity Sections
+      //html += `<h4>Monthly Focus Areas</h4>`;
+      //html += `<table><tr><th style='width:25%'>Top 3 Goals</th><th style='width:25%'>Key Metrics</th><th style='width:25%'>Obstacles</th><th style='width:25%'>Solutions</th></tr>`;
+      //for (let i = 0; i < 3; i++) {
+        //html += `<tr><td style='height:40px'></td><td></td><td></td><td></td></tr>`;
+      //}
+      //html += `</table>`;
+
+      // Goals/Tasks Table
+      html += `<table><tr><th>Task</th>`;
+
+      // Weeks as headers with progress boxes
+      for (let w = 1; w <= 4; w++) {
+        html += `<th>Week ${w}</th><th style='width:30px'>✓</th>`;
+      }
+      html += `</tr>`;
+
+      // Use user tasks
+      const weeklyTasks = ["", "", "", "", ""];
+      for (const task of weeklyTasks) {
+        html += `<tr><td>${task}</td>`;
+        for (let w = 1; w <= 4; w++) {
+          html += `<td class='task-cell'></td><td style='width:30px; border-left:2px solid #666;'></td>`;
+        }
+        html += `</tr>`;
+      }
+      html += `</table>`;
+
+      // Notes section
+      html += `<h4>Notes</h4>`;
+      for (let i = 0; i < 8; i++) {
+        html += `<div style="border-bottom: 1px solid #ccc; height: 25px; margin-bottom: 8px;"></div>`;
+      }
+
+      document.getElementById("planner").innerHTML = html;
+      document.getElementById("downloadBtn").style.display = "inline-block";
+    }
+
+    function downloadPlanner() {
+      // Ensure landscape mode in print dialog
+      const style = document.createElement('style');
+      style.textContent = '@page { size: A4 landscape; margin: 10mm; }';
+      document.head.appendChild(style);
+      
+      setTimeout(() => {
+        window.print();
+        document.head.removeChild(style);
+      }, 100);
+    }
+
+    window.onload = function() {
+      document.getElementById("dailyTasks").value = "Weight\nRunning\nGym\nClean Diet\nUp Skill";
+      
+      // Populate year dropdown
+      const yearSelect = document.getElementById("yearSelect");
+      const currentYear = new Date().getFullYear();
+      for (let year = currentYear; year <= currentYear + 5; year++) {
+        const option = document.createElement("option");
+        option.value = year;
+        option.textContent = year;
+        yearSelect.appendChild(option);
+      }
+      
+      // Set default to next month
+      const today = new Date();
+      let nextMonth = today.getMonth() + 2;
+      let year = today.getFullYear();
+      if (nextMonth > 12) { nextMonth = 1; year += 1; }
+      
+      document.getElementById("monthSelect").value = nextMonth;
+      document.getElementById("yearSelect").value = year;
+    };
+  </script>
+</body>
+
+</html>
