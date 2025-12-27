@@ -43,6 +43,11 @@ create_app_aliases() {
     alias "code-$folder_name"="cd $APPS_DIR/$folder_name && code \"$dir\""
     alias "sf-$folder_name"="cd \"$dir\"frontend && rd"
     alias "sb-$folder_name"="cd \"$dir\"backend && rd"
+    
+    # Create kiro-cli agent aliases
+    agent_name=$(echo "$folder_name" | sed 's/_/-/g')
+    alias "kiro-$folder_name"="kiro-cli chat --agent $agent_name"
+    alias "k-$folder_name"="kiro-cli chat --agent $agent_name"
   done
 
   for dir in "$HOME"/my_applications/*/; do
@@ -51,6 +56,11 @@ create_app_aliases() {
     alias "code-$folder_name"="code \"$dir\""
     alias "sf-$folder_name"="cd \"$dir\"frontend && rd"
     alias "sb-$folder_name"="cd \"$dir\"backend && rd"
+    
+    # Create kiro-cli agent aliases for my_applications too
+    agent_name=$(echo "$folder_name" | sed 's/_/-/g')
+    alias "kiro-$folder_name"="kiro-cli chat --agent $agent_name"
+    alias "k-$folder_name"="kiro-cli chat --agent $agent_name"
   done
 }
 
@@ -82,8 +92,6 @@ alias sb-indi="cd ${APPS_DIR}/indi-wheel/backend && sudo docker-compose up"
 alias sb-horilla="cd ${APPS_DIR}/horilla && sudo docker-compose up"
 alias sb-hrms="cd ${APPS_DIR}/hrms/docker/ && sudo docker-compose up"
 alias sb-candidperks="cd ${APPS_DIR}/candidperks/backend && uvicorn app.main:app --reload --host 0.0.0.0 --port 8001"
-
-alias dockerclean="sudo docker system prune -a --volumes --force"
 
 redis-clear() {
   local pattern="*"
