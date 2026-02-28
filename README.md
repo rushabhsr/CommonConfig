@@ -40,20 +40,57 @@ CommonConfig/
 
 ## 🚀 Quick Start
 
+### Automatic Setup (Recommended)
+
 1. **Clone the repository**:
    ```bash
    git clone git@github.com:rushabhsr/CommonConfig.git ~/CommonConfig
    ```
 
-2. **Auto-source all shell aliases** (adds to ~/.bashrc):
+2. **Add all shell aliases to your system**:
+   
+   For **bash** users (adds to `~/.bashrc`):
    ```bash
-   for file in ~/CommonConfig/shell-aliases/*.sh; do echo "source $file" >> ~/.bashrc; done
+   for file in ~/CommonConfig/shell-aliases/*.sh; do 
+     echo "source \"$file\"" >> ~/.bashrc
+   done
+   ```
+   
+   For **zsh** users (adds to `~/.zshrc`):
+   ```bash
+   for file in ~/CommonConfig/shell-aliases/*.sh; do 
+     echo "source \"$file\"" >> ~/.zshrc
+   done
    ```
 
 3. **Reload your shell**:
    ```bash
+   source ~/.bashrc  # or source ~/.zshrc for zsh
+   # OR restart terminal
    exec $SHELL
    ```
+
+### Verify Installation
+
+Test that aliases are loaded:
+```bash
+# Test git aliases
+gst  # Should show git status
+
+# Test utility functions
+type dockerclean  # Should show function definition
+type getCM        # Should show function definition
+```
+
+### What Gets Added
+
+All `.sh` files from `shell-aliases/` directory:
+- ✅ `ZunoCommonFunc.sh` - Django/Docker log functions
+- ✅ `fyndCommonFunc.sh` - K8s/Database utilities  
+- ✅ `commFuncParams.sh` - Docker cleanup & SSH agent
+- ✅ `gitAliases.sh` - 100+ git shortcuts
+- ✅ `shellHistory.sh` - Enhanced history search
+- ✅ `kiroAliases.sh` - Kiro CLI integration (if present)
 
 ## 📋 Features
 
