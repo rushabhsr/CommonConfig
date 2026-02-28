@@ -25,9 +25,135 @@ if ! pgrep -u "$USER" ssh-agent > /dev/null; then
     eval "$(ssh-agent -s)"
 fi
 
+# ============================================================================
+# Custom Prompt - Show current directory and git branch
+# ============================================================================
+
+# Function to get git branch
+parse_git_branch() {
+  git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+
+# Set custom prompt: directory + git branch
+export PS1='\[\033[01;34m\]\W\[\033[00m\]\[\033[01;32m\]$(parse_git_branch)\[\033[00m\]\$ '
+
+# ============================================================================
+# Terminal & Navigation Aliases
+# ============================================================================
+
+alias c='clear'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias -- -='cd -'
+
+# ============================================================================
+# File Operations
+# ============================================================================
+
+alias cp='cp -iv'
+alias mv='mv -iv'
+alias mkdir='mkdir -pv'
 alias rm='rm -v'
+
+# ============================================================================
+# Listing Files
+# ============================================================================
+
+alias ll='ls -alFh'
+alias la='ls -A'
+alias l='ls -CF'
+alias lt='ls -ltrh'
+alias lsize='ls -lSrh'
+alias ldir='ls -d */'
 alias ls20='ls -lrth | tail -20'
 alias ls10='ls -lrth | tail -10'
+
+# ============================================================================
+# Search & Find
+# ============================================================================
+
+alias grep='grep --color=auto'
+alias ff='find . -type f -name'
+alias fd='find . -type d -name'
+
+# ============================================================================
+# Process Management
+# ============================================================================
+
+alias psg='ps aux | grep -v grep | grep -i -e VSZ -e'
+alias ports='netstat -tulanp'
+alias myip='curl ifconfig.me'
+alias localip='hostname -I'
+
+# ============================================================================
+# System Info
+# ============================================================================
+
+alias df='df -h'
+alias du='du -h'
+alias free='free -h'
+
+# ============================================================================
+# Python Shortcuts
+# ============================================================================
+
+alias py='python3'
+alias pip='pip3'
+alias venv='python3 -m venv venv'
+alias activate='source venv/bin/activate'
+alias pipr='pip install -r requirements.txt'
+alias pipf='pip freeze > requirements.txt'
+alias manage='python manage.py'
+alias shell='python manage.py shell'
+alias test='python manage.py test'
+
+# ============================================================================
+# Docker Shortcuts
+# ============================================================================
+
+alias d='docker'
+alias dc='docker-compose'
+alias dcu='docker-compose up'
+alias dcd='docker-compose down'
+alias dcr='docker-compose restart'
+alias dps='docker ps'
+alias dpsa='docker ps -a'
+alias di='docker images'
+alias dex='docker exec -it'
+alias dlogs='docker logs -f'
+alias dstop='docker stop $(docker ps -q)'
+
+# ============================================================================
+# Productivity
+# ============================================================================
+
+alias j='jobs -l'
+alias path='echo -e ${PATH//:/\\n}'
+alias now='date +"%T"'
+alias nowdate='date +"%Y-%m-%d"'
+alias reload='source ~/.bashrc'
+
+# ============================================================================
+# Network
+# ============================================================================
+
+alias ping='ping -c 5'
+alias wget='wget -c'
+
+# ============================================================================
+# History Aliases
+# ============================================================================
+
+alias h='history'
+alias hg='history | grep'
+alias hs='history | grep -i'
+alias hc='history -c && history -w'
+alias htop10='history | awk "{print \$2}" | sort | uniq -c | sort -rn | head -10'
+
+# ============================================================================
+# Aliases
+# ============================================================================
 
 # Aliases to start Apache2 and MySQL
 alias start_php='sudo systemctl start apache2 && sudo systemctl start mysql'
@@ -43,11 +169,6 @@ create_app_aliases() {
     alias "code-$folder_name"="cd $APPS_DIR/$folder_name && code \"$dir\""
     alias "sf-$folder_name"="cd \"$dir\"frontend && rd"
     alias "sb-$folder_name"="cd \"$dir\"backend && rd"
-    
-    # Create kiro-cli agent aliases
-    agent_name=$(echo "$folder_name" | sed 's/_/-/g')
-    alias "kiro-$folder_name"="kiro-cli chat --agent $agent_name"
-    alias "k-$folder_name"="kiro-cli chat --agent $agent_name"
   done
 
   for dir in "$HOME"/my_applications/*/; do
@@ -56,11 +177,6 @@ create_app_aliases() {
     alias "code-$folder_name"="code \"$dir\""
     alias "sf-$folder_name"="cd \"$dir\"frontend && rd"
     alias "sb-$folder_name"="cd \"$dir\"backend && rd"
-    
-    # Create kiro-cli agent aliases for my_applications too
-    agent_name=$(echo "$folder_name" | sed 's/_/-/g')
-    alias "kiro-$folder_name"="kiro-cli chat --agent $agent_name"
-    alias "k-$folder_name"="kiro-cli chat --agent $agent_name"
   done
 }
 

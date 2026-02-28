@@ -1,16 +1,41 @@
 # CommonConfig
 
-A collection of shell utilities and aliases for development workflow automation, particularly focused on Python/Django projects and Docker management.
+A collection of shell utilities and aliases for development workflow automation, particularly focused on Python/Django projects, Docker management, database operations, and git workflows.
 
 ## 📁 Repository Structure
 
 ```
 CommonConfig/
-├── ZunoCommonFunc.sh          # Django project aliases and Docker log functions
-├── fyndCommonFunc.sh          # Database utilities and Kubernetes helpers
-├── commFuncParams.sh          # Docker cleanup and SSH agent management
-├── create_and_run_port_forward.sh  # WSL port forwarding automation
-└── README.md
+├── README.md
+├── .gitignore
+│
+├── docs/                              # Documentation
+│   └── KIRO_CLI_GUIDE.md             # Complete guide for Kiro CLI usage
+│
+├── shell-aliases/                     # Shell functions to be sourced
+│   ├── ZunoCommonFunc.sh             # Django/Docker aliases
+│   ├── fyndCommonFunc.sh             # Database/K8s utilities
+│   ├── commFuncParams.sh             # Docker cleanup/SSH agent
+│   ├── gitAliases.sh                 # 100+ Git aliases (from oh-my-bash)
+│   └── shellHistory.sh               # History config with up arrow search
+│
+├── db-managers/                       # Database management tools
+│   ├── postgres_db_manager.sh
+│   ├── clickhouse_db_manager.sh
+│   ├── *.config.example
+│   └── README_*.md
+│
+├── git-tools/                         # Git utilities
+│   ├── sync_branches.sh
+│   └── README_sync_branches.md
+│
+├── network-tools/                     # Network utilities
+│   └── create_and_run_port_forward.sh
+│
+└── checklist-generator/               # Checklist/planner tools
+    ├── generate_checklist.py
+    ├── checklist_config.csv
+    └── templates (html/md)
 ```
 
 ## 🚀 Quick Start
@@ -20,9 +45,9 @@ CommonConfig/
    git clone git@github.com:rushabhsr/CommonConfig.git ~/CommonConfig
    ```
 
-2. **Auto-source all scripts** (adds to ~/.bashrc):
+2. **Auto-source all shell aliases** (adds to ~/.bashrc):
    ```bash
-   for file in ~/CommonConfig/*.sh; do echo "source $file" >> ~/.bashrc; done
+   for file in ~/CommonConfig/shell-aliases/*.sh; do echo "source $file" >> ~/.bashrc; done
    ```
 
 3. **Reload your shell**:
@@ -76,9 +101,11 @@ Edit individual `.sh` files to match your:
 
 Source individual scripts as needed:
 ```bash
-source ~/CommonConfig/ZunoCommonFunc.sh      # Django aliases
-source ~/CommonConfig/commFuncParams.sh      # Docker utilities
-source ~/CommonConfig/fyndCommonFunc.sh      # Database/K8s helpers
+source ~/CommonConfig/shell-aliases/ZunoCommonFunc.sh      # Django aliases
+source ~/CommonConfig/shell-aliases/commFuncParams.sh      # Docker utilities
+source ~/CommonConfig/shell-aliases/fyndCommonFunc.sh      # Database/K8s helpers
+source ~/CommonConfig/shell-aliases/gitAliases.sh          # Git aliases
+source ~/CommonConfig/shell-aliases/shellHistory.sh        # History with up arrow search
 ```
 
 ## 📝 Usage Examples
@@ -97,5 +124,28 @@ opslogs 50
 dockerclean test
 
 # Forward WSL port 3000 to Windows
-./create_and_run_port_forward.sh 3000
+./network-tools/create_and_run_port_forward.sh 3000
+
+# Use git aliases
+gst              # git status
+gco main         # git checkout main
+gcam "message"   # git commit -all -message
+glog             # pretty git log
 ```
+
+## 📚 Additional Features
+
+### Git Aliases (100+ aliases)
+- `gst` - git status
+- `gco` - git checkout
+- `gcb` - git checkout -b (new branch)
+- `glog` - pretty git log with graph
+- `gp` - git push
+- `gl` - git pull
+- And many more! See `shell-aliases/gitAliases.sh`
+
+### Shell History with Up Arrow Search
+- Type partial command and press ↑ to search history
+- Example: Type "git" and press ↑ to cycle through git commands
+- Increased history size (10,000 commands)
+- Duplicate removal and timestamps
