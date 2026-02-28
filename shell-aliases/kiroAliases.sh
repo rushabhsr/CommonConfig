@@ -240,7 +240,7 @@ EOF
 kiro() {
   local current_dir=$(pwd)
   
-  # Check if we're in ~/applications or ~/my_applications
+  # Quick check: only detect if in applications directory
   if [[ "$current_dir" == "$HOME/applications/"* ]] || [[ "$current_dir" == "$HOME/my_applications/"* ]]; then
     # Extract project name (first directory after applications/)
     local project_path
@@ -267,7 +267,7 @@ kiro() {
     echo "Starting kiro-cli with agent: $agent_name"
     kiro-start-with-init "$agent_name" "$@"
   else
-    # Not in a project directory, use default
+    # Not in a project directory, use default (no detection)
     kiro-cli chat "$@"
   fi
 }
@@ -473,29 +473,31 @@ alias kiro-chat-dir='echo "Chat directory: $KIRO_CHAT_DIR"'
 # ============================================================================
 
 # Generate commit message from staged changes
-alias gcai='git diff --cached | kiro-cli chat --prompt "Generate a concise, conventional commit message for these changes. Format: type(scope): description"'
+alias gcai='f() { echo -e "Generate a concise, conventional commit message for these changes. Format: type(scope): description\n\n$(git diff --cached)" | kiro-cli chat; }; f'
 
 # Code review current changes
-alias greview='git diff | kiro-cli chat --prompt "Review this code for issues, bugs, improvements, and best practices. Be specific and actionable."'
+alias greview='f() { echo -e "Review this code for issues, bugs, improvements, and best practices. Be specific and actionable.\n\n$(git diff)" | kiro-cli chat; }; f'
 
 # Code review staged changes
-alias greview-staged='git diff --cached | kiro-cli chat --prompt "Review these staged changes for issues, bugs, improvements, and best practices. Be specific and actionable."'
+alias greview-staged='f() { echo -e "Review these staged changes for issues, bugs, improvements, and best practices. Be specific and actionable.\n\n$(git diff --cached)" | kiro-cli chat; }; f'
 
 # Generate PR description
-alias gpr-desc='git log origin/main..HEAD --oneline | kiro-cli chat --prompt "Generate a detailed PR description from these commits. Include: summary, changes made, testing done, and any breaking changes."'
+alias gpr-desc='f() { echo -e "Generate a detailed PR description from these commits. Include: summary, changes made, testing done, and any breaking changes.\n\n$(git log origin/main..HEAD --oneline)" | kiro-cli chat; }; f'
 
 # Generate PR description (custom base branch)
-alias gpr-desc-from='f() { git log origin/${1:-main}..HEAD --oneline | kiro-cli chat --prompt "Generate a detailed PR description from these commits. Include: summary, changes made, testing done, and any breaking changes."; }; f'
+alias gpr-desc-from='f() { echo -e "Generate a detailed PR description from these commits. Include: summary, changes made, testing done, and any breaking changes.\n\n$(git log origin/${1:-main}..HEAD --oneline)" | kiro-cli chat; }; f'
 
 # Explain what changed between branches
-alias gexplain='f() { git diff ${1:-main}...${2:-HEAD} | kiro-cli chat --prompt "Explain what changed in this diff in simple terms. Summarize the key changes and their purpose."; }; f'
+alias gexplain='f() { echo -e "Explain what changed in this diff in simple terms. Summarize the key changes and their purpose.\n\n$(git diff ${1:-main}...${2:-HEAD})" | kiro-cli chat; }; f'
 
 # Suggest commit message for current changes
-alias gsuggest='git diff | kiro-cli chat --prompt "Suggest a commit message for these changes. Format: type(scope): description"'
+alias gsuggest='f() { echo -e "Suggest a commit message for these changes. Format: type(scope): description\n\n$(git diff)" | kiro-cli chat; }; f'
 
 # ============================================================================
 # Kiro Utility Functions
 # ============================================================================
+
+kiro-set-chat-dir() {
   local new_dir="$1"
   
   if [ -z "$new_dir" ]; then
