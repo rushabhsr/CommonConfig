@@ -106,7 +106,7 @@ alias pipr='pip install -r requirements.txt'
 alias pipf='pip freeze > requirements.txt'
 alias manage='python manage.py'
 alias shell='python manage.py shell'
-alias test='python manage.py test'
+alias djtest='python manage.py test'
 
 # ============================================================================
 # Docker Shortcuts
@@ -302,4 +302,9 @@ mirrorsite() {
        --span-hosts --domains="$domain" \
        --wait=1 --random-wait -e robots=off "$1" > "$domain.log" 2>&1 &
   echo "Downloading $1 in background (PID: $!) — log: $domain.log"
+}
+
+grabpage() {
+  nohup wget --page-requisites --convert-links --adjust-extension -e robots=off "$1" > /dev/null 2>&1 &
+  echo "Downloading $1 in background (PID: $!)"
 }
