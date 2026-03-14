@@ -295,3 +295,11 @@ spillover() {
     fi
     echo "Start Time: $start_time, End Time: $end_time (Day: ${day_mins}min, Night: ${night_mins}min)"
 }
+
+mirrorsite() {
+  local domain=$(echo "$1" | awk -F/ '{print $3}')
+  nohup wget --mirror --convert-links --adjust-extension --page-requisites \
+       --span-hosts --domains="$domain" \
+       --wait=1 --random-wait -e robots=off "$1" > "$domain.log" 2>&1 &
+  echo "Downloading $1 in background (PID: $!) — log: $domain.log"
+}
