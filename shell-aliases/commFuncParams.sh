@@ -1,3 +1,6 @@
+# Case-insensitive tab completion
+bind 'set completion-ignore-case on'
+
 function DEBUG(){
     echo -e "`date +%a_%d_%m_%y%H_%M_%S`: $1"
 }
@@ -117,7 +120,7 @@ alias dc='docker-compose'
 alias dcu='docker-compose up'
 alias dcd='docker-compose down'
 alias dcr='docker-compose restart'
-alias dps='docker ps'
+alias dps='docker ps --format "table {{.ID}}\t{{.Names}}\t{{.Status}}"'
 alias dpsa='docker ps -a'
 alias di='docker images'
 alias dex='docker exec -it'
@@ -160,6 +163,8 @@ alias start_php='sudo systemctl start apache2 && sudo systemctl start mysql'
 # Aliases to stop Apache2 and MySQL
 alias stop_php='sudo systemctl stop apache2 && sudo systemctl stop mysql'
 
+
+alias kode='kiro.exe'
 # Function to create aliases for each folder in ~/applications
 APPS_DIR=$HOME/applications
 create_app_aliases() {
@@ -167,6 +172,7 @@ create_app_aliases() {
     folder_name=$(basename "$dir")
     alias "$folder_name"="cd \"$dir\""
     alias "code-$folder_name"="cd $APPS_DIR/$folder_name && code \"$dir\""
+    alias "kode-$folder_name"="cd $APPS_DIR/$folder_name && kode \"$dir\""
     alias "sf-$folder_name"="cd \"$dir\"frontend && rd"
     alias "sb-$folder_name"="cd \"$dir\"backend && rd"
   done

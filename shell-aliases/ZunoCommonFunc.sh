@@ -91,6 +91,7 @@ alias sb-staar='cd /home/rushabhsr/applications/pulse-api && npm run dev'
 
 alias qassh='sshpass -p "2YNyKp^'\''FTP+:F+A" ssh cms-admin@172.31.0.19'
 alias uatssh='sshpass -p "2YNyKp^'\''FTP+:F+A" ssh cms-admin@10.226.241.35'
+alias prodssh='sshpass -p "HCVs!k@2Y4]FLUj&" ssh digiqt-user@192.168.118.16'
 
 
 code-cv() {
