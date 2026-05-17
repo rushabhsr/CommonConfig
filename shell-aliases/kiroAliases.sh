@@ -166,7 +166,60 @@ You have deep knowledge of $tech_stack and follow industry best practices. You u
 4. Verify code follows project conventions
 
 Remember: Quality over speed. It's better to ask questions and get it right than to make assumptions and introduce bugs.
+
+**Active Skills (auto-loaded):**
+$(generate_skills_block)
 EOF
+}
+
+# Generate skills block based on available installed skills
+generate_skills_block() {
+  local skills_dir="$HOME/.kiro/skills"
+  local block=""
+  
+  # Caveman - context compression & memory (all agents)
+  if [ -d "$skills_dir/caveman" ]; then
+    block="${block}\n- **caveman**: Context compression and memory management — use to preserve critical context across long sessions"
+  fi
+  if [ -d "$skills_dir/caveman-compress" ]; then
+    block="${block}\n- **caveman-compress**: Compress context window when approaching limits"
+  fi
+  if [ -d "$skills_dir/caveman-commit" ]; then
+    block="${block}\n- **caveman-commit**: Generate structured conventional commits"
+  fi
+  if [ -d "$skills_dir/caveman-review" ]; then
+    block="${block}\n- **caveman-review**: Perform thorough code reviews"
+  fi
+  if [ -d "$skills_dir/cavecrew" ]; then
+    block="${block}\n- **cavecrew**: Multi-agent coordination patterns"
+  fi
+  
+  # Graphify - knowledge graph (all agents)
+  if [ -d "$skills_dir/graphify" ]; then
+    block="${block}\n- **graphify**: Build queryable knowledge graphs from code — use for architecture mapping, dependency analysis, and codebase understanding"
+  fi
+  
+  # AI Engineering Toolkit (all agents)
+  if [ -d "$skills_dir/prompt-evaluator" ]; then
+    block="${block}\n- **prompt-evaluator**: Score prompts across 8 dimensions (0-100)"
+  fi
+  if [ -d "$skills_dir/context-budget-planner" ]; then
+    block="${block}\n- **context-budget-planner**: Optimize token allocation across context zones"
+  fi
+  if [ -d "$skills_dir/agent-safety-guard" ]; then
+    block="${block}\n- **agent-safety-guard**: 65-point security audit for AI agents"
+  fi
+  if [ -d "$skills_dir/eval-harness-builder" ]; then
+    block="${block}\n- **eval-harness-builder**: Build evaluation frameworks for LLM features"
+  fi
+  if [ -d "$skills_dir/rag-pipeline-architect" ]; then
+    block="${block}\n- **rag-pipeline-architect**: Design end-to-end RAG systems"
+  fi
+  if [ -d "$skills_dir/product-sense-coach" ]; then
+    block="${block}\n- **product-sense-coach**: Validate product decisions before coding"
+  fi
+  
+  echo -e "$block"
 }
 
 # Function to ensure kiro agent exists before starting chat
@@ -288,7 +341,7 @@ create_kiro_aliases() {
       local agent_name=$(echo "$folder_name" | sed 's/_/-/g')
       
       alias "kiro-$folder_name"="ensure_kiro_agent '$agent_name' '$dir' && cd '$dir' && kiro-start-with-init '$agent_name'"
-      alias "k-$folder_name"="ensure_kiro_agent '$agent_name' '$dir' && cd '$dir' && kiro-start-with-init '$agent_name'"
+      alias "k-$folder_name"="ensure_kiro_agent '$agent_name' '$dir' && cd '$dir' && _KIRO_RIA_MODE=WRITE && echo '✍️  RIA mode: WRITE' && kiro-start-with-init '$agent_name'"
     done
   fi
   
@@ -300,7 +353,7 @@ create_kiro_aliases() {
       local agent_name=$(echo "$folder_name" | sed 's/_/-/g')
       
       alias "kiro-$folder_name"="ensure_kiro_agent '$agent_name' '$dir' && cd '$dir' && kiro-start-with-init '$agent_name'"
-      alias "k-$folder_name"="ensure_kiro_agent '$agent_name' '$dir' && cd '$dir' && kiro-start-with-init '$agent_name'"
+      alias "k-$folder_name"="ensure_kiro_agent '$agent_name' '$dir' && cd '$dir' && _KIRO_RIA_MODE=WRITE && echo '✍️  RIA mode: WRITE' && kiro-start-with-init '$agent_name'"
     done
   fi
 }
@@ -524,3 +577,1042 @@ kiro-set-chat-dir() {
   echo "✓ Chat directory set to: $new_dir"
   echo "✓ Updated ~/.bashrc for persistence"
 }
+
+
+# ============================================================================
+# AI Agent Squad - Per-Service Agent Definitions
+# ============================================================================
+# Each agent has: role, skills, tools, permissions (least privilege)
+# Permission levels: READ, WRITE_CODE, GIT_ACCESS, MR_CREATE, MERGE
+
+KIRO_AI_SYSTEM_DIR="${KIRO_AI_SYSTEM_DIR:-$HOME/.kiro/ai-system}"
+
+# Agent definitions as associative-style functions for portability
+_agent_def_dev() {
+  cat << 'EOF'
+{
+  "role": "dev",
+  "description": "Software development agent - writes production code",
+  "skills": ["framework_expertise", "api_design", "db_schema_design", "code_generation"],
+  "tools": ["read_file", "write_file", "parse_code_ast", "git_branch", "git_commit", "git_diff", "run_formatter"],
+  "permissions": {"write_code": true, "git_access": true, "mr_create": false, "merge": false},
+  "restrictions": ["no_merge", "no_push_protected_branches", "no_approve_mr"]
+}
+EOF
+}
+
+_agent_def_test() {
+  cat << 'EOF'
+{
+  "role": "test",
+  "description": "Test agent - writes and runs tests only",
+  "skills": ["unit_testing", "integration_testing", "edge_case_generation", "test_coverage"],
+  "tools": ["read_file", "write_file", "run_tests", "search_files"],
+  "permissions": {"write_code": false, "git_access": false, "mr_create": false, "merge": false},
+  "restrictions": ["no_modify_production_code", "test_files_only"]
+}
+EOF
+}
+
+_agent_def_quality() {
+  cat << 'EOF'
+{
+  "role": "quality",
+  "description": "Code quality agent - linting, formatting, clean architecture",
+  "skills": ["clean_architecture", "design_patterns", "refactoring", "code_review"],
+  "tools": ["read_file", "write_file", "run_linter", "run_formatter", "parse_code_ast"],
+  "permissions": {"write_code": true, "git_access": false, "mr_create": false, "merge": false},
+  "restrictions": ["style_and_structure_only"]
+}
+EOF
+}
+
+_agent_def_security() {
+  cat << 'EOF'
+{
+  "role": "security",
+  "description": "Security agent - OWASP, auth, input validation, vulnerability scanning",
+  "skills": ["owasp_top10", "auth_flows", "input_validation", "secret_scanning", "dependency_audit"],
+  "tools": ["read_file", "run_security_scan", "search_files", "dependency_analyzer"],
+  "permissions": {"write_code": false, "git_access": false, "mr_create": false, "merge": false},
+  "restrictions": ["read_only", "suggestions_via_dev_agent"]
+}
+EOF
+}
+
+_agent_def_contract() {
+  cat << 'EOF'
+{
+  "role": "contract",
+  "description": "API contract agent - OpenAPI/schema validation, API consistency",
+  "skills": ["openapi_validation", "schema_design", "api_consistency", "backward_compatibility"],
+  "tools": ["read_file", "write_file", "api_schema_validator", "search_files"],
+  "permissions": {"write_code": true, "git_access": false, "mr_create": false, "merge": false},
+  "restrictions": ["schema_and_contract_files_only"]
+}
+EOF
+}
+
+_agent_def_performance() {
+  cat << 'EOF'
+{
+  "role": "performance",
+  "description": "Performance agent - query optimization, latency analysis, load testing",
+  "skills": ["query_optimization", "api_latency_analysis", "memory_profiling", "load_testing"],
+  "tools": ["read_file", "run_tests", "metrics_reader", "search_files"],
+  "permissions": {"write_code": false, "git_access": false, "mr_create": false, "merge": false},
+  "restrictions": ["read_only", "perf_test_files_only"]
+}
+EOF
+}
+
+_agent_def_refactor() {
+  cat << 'EOF'
+{
+  "role": "refactor",
+  "description": "Refactor agent - code simplification, dead code removal",
+  "skills": ["code_simplification", "dead_code_removal", "pattern_extraction", "dependency_reduction"],
+  "tools": ["read_file", "write_file", "parse_code_ast", "run_linter", "run_tests"],
+  "permissions": {"write_code": true, "git_access": false, "mr_create": false, "merge": false},
+  "restrictions": ["behavior_preserving_only", "must_pass_tests"]
+}
+EOF
+}
+
+# ============================================================================
+# Repo Intelligence Agent (RIA) - The Staff Engineer On-Call
+# ============================================================================
+# Modes: READ (default) | PLAN | WRITE
+# READ  = answer questions, trace flows, explain architecture
+# PLAN  = impact analysis, change proposals, diff generation
+# WRITE = branch + patch + pipeline + Draft MR (never merges)
+
+_agent_def_ria() {
+  local mode="${1:-READ}"
+  cat << EOF
+{
+  "role": "repo-intelligence",
+  "mode": "$mode",
+  "description": "Repo Intelligence Agent - architect + historian + careful surgeon",
+  "skills_by_mode": {
+    "READ": ["code_understanding", "dependency_tracing", "architecture_reasoning", "flow_analysis", "impact_preview"],
+    "PLAN": ["impact_analysis", "change_planning", "risk_assessment", "diff_generation"],
+    "WRITE": ["code_modification", "safe_patching", "branch_management", "mr_creation"]
+  },
+  "tools_by_mode": {
+    "READ": ["read_file", "search_files", "parse_code_ast", "dependency_analyzer", "vector_search", "list_directory"],
+    "PLAN": ["read_file", "parse_code_ast", "dependency_analyzer", "git_diff", "search_files"],
+    "WRITE": ["read_file", "write_file", "git_branch", "git_commit", "git_diff", "git_push", "create_merge_request", "run_tests", "run_linter", "run_security_scan"]
+  },
+  "permissions_by_mode": {
+    "READ":  {"write_code": false, "git_access": false, "mr_create": false, "merge": false},
+    "PLAN":  {"write_code": false, "git_access": false, "mr_create": false, "merge": false},
+    "WRITE": {"write_code": true,  "git_access": true,  "mr_create": true,  "merge": false}
+  },
+  "restrictions": [
+    "NEVER merge or approve MRs",
+    "NEVER push to protected branches (main, develop)",
+    "WRITE mode requires explicit user approval",
+    "Default mode is always READ",
+    "Must re-index knowledge after code changes",
+    "Prefer file-based reasoning over hallucination",
+    "Diff-aware edits only (no blind overwrite)",
+    "Abort if tests or security scans fail"
+  ],
+  "knowledge_sources": [
+    "knowledge/code-index.json",
+    "knowledge/dependency-graph.json",
+    "knowledge/api-map.json",
+    "knowledge/symbols.json",
+    "knowledge/summaries.md"
+  ],
+  "outputs": {
+    "PLAN": ["plan.json", "impact-analysis.md", "proposed-diff.patch"],
+    "WRITE": ["feature-branch", "draft-mr", "pipeline-results"]
+  }
+}
+EOF
+}
+
+# Global agents
+_agent_def_master() {
+  cat << 'EOF'
+{
+  "role": "master",
+  "description": "Master orchestrator - task decomposition, system-wide coordination",
+  "skills": ["task_decomposition", "system_orchestration", "priority_management", "cross_service_reasoning"],
+  "tools": ["read_file", "search_files", "list_directory"],
+  "permissions": {"write_code": false, "git_access": false, "mr_create": false, "merge": false},
+  "restrictions": ["no_direct_code_modification", "delegates_to_service_agents"]
+}
+EOF
+}
+
+_agent_def_pr_review() {
+  cat << 'EOF'
+{
+  "role": "pr-review",
+  "description": "PR review agent - code review, best practices enforcement",
+  "skills": ["code_review", "best_practices", "security_review", "performance_review"],
+  "tools": ["read_file", "git_diff", "comment_on_mr", "search_files"],
+  "permissions": {"write_code": false, "git_access": false, "mr_create": false, "merge": false},
+  "restrictions": ["read_only", "comments_only"]
+}
+EOF
+}
+
+_agent_def_release() {
+  cat << 'EOF'
+{
+  "role": "release",
+  "description": "Release agent - versioning, changelog, tagging",
+  "skills": ["semantic_versioning", "changelog_generation", "release_notes"],
+  "tools": ["read_file", "git_tag", "git_commit", "search_files"],
+  "permissions": {"write_code": false, "git_access": true, "mr_create": false, "merge": false},
+  "restrictions": ["version_files_and_tags_only"]
+}
+EOF
+}
+
+_agent_def_devops() {
+  cat << 'EOF'
+{
+  "role": "devops",
+  "description": "DevOps agent - CI/CD, Docker, infrastructure",
+  "skills": ["cicd_pipelines", "docker", "infrastructure_debugging", "deployment"],
+  "tools": ["read_file", "write_file", "run_commands", "search_files"],
+  "permissions": {"write_code": true, "git_access": false, "mr_create": false, "merge": false},
+  "restrictions": ["infra_and_ci_files_only"]
+}
+EOF
+}
+
+# ============================================================================
+# Permission Matrix Enforcement
+# ============================================================================
+
+# Print the permission matrix
+kiro-permissions() {
+  cat << 'EOF'
+┌─────────────────────┬────────────┬────────────┬───────────┬───────┐
+│ Agent               │ Write Code │ Git Access │ MR Create │ Merge │
+├─────────────────────┼────────────┼────────────┼───────────┼───────┤
+│ Dev Agent           │     ✅     │     ✅     │     ❌    │  ❌   │
+│ Test Agent          │     ❌     │     ❌     │     ❌    │  ❌   │
+│ Quality Agent       │     ✅     │     ❌     │     ❌    │  ❌   │
+│ Security Agent      │     ❌     │     ❌     │     ❌    │  ❌   │
+│ Contract Agent      │     ✅     │     ❌     │     ❌    │  ❌   │
+│ Performance Agent   │     ❌     │     ❌     │     ❌    │  ❌   │
+│ Refactor Agent      │     ✅     │     ❌     │     ❌    │  ❌   │
+│ RIA (READ)          │     ❌     │     ❌     │     ❌    │  ❌   │
+│ RIA (PLAN)          │     ❌     │     ❌     │     ❌    │  ❌   │
+│ RIA (WRITE)         │     ✅     │     ✅     │     ✅    │  ❌   │
+│ Master Agent        │     ❌     │     ❌     │     ❌    │  ❌   │
+│ PR Review Agent     │     ❌     │     ❌     │     ❌    │  ❌   │
+│ Release Agent       │     ❌     │     ✅     │     ❌    │  ❌   │
+│ DevOps Agent        │     ✅     │     ❌     │     ❌    │  ❌   │
+└─────────────────────┴────────────┴────────────┴───────────┴───────┘
+
+Legend: ✅ = Allowed  ❌ = Blocked  
+Rule: Only YOU can merge. Always.
+EOF
+}
+
+# Validate agent permission before action
+_kiro_check_permission() {
+  local agent_role="$1"
+  local action="$2"  # write_code | git_access | mr_create | merge
+  
+  local def_output
+  case "$agent_role" in
+    dev)         def_output=$(_agent_def_dev) ;;
+    test)        def_output=$(_agent_def_test) ;;
+    quality)     def_output=$(_agent_def_quality) ;;
+    security)    def_output=$(_agent_def_security) ;;
+    contract)    def_output=$(_agent_def_contract) ;;
+    performance) def_output=$(_agent_def_performance) ;;
+    refactor)    def_output=$(_agent_def_refactor) ;;
+    ria-read)    def_output=$(_agent_def_ria READ) ;;
+    ria-plan)    def_output=$(_agent_def_ria PLAN) ;;
+    ria-write)   def_output=$(_agent_def_ria WRITE) ;;
+    master)      def_output=$(_agent_def_master) ;;
+    pr-review)   def_output=$(_agent_def_pr_review) ;;
+    release)     def_output=$(_agent_def_release) ;;
+    devops)      def_output=$(_agent_def_devops) ;;
+    *) echo "❌ Unknown agent: $agent_role"; return 1 ;;
+  esac
+  
+  if command -v jq &>/dev/null; then
+    local allowed
+    if [[ "$agent_role" == ria-* ]]; then
+      local mode="${agent_role#ria-}"
+      allowed=$(echo "$def_output" | jq -r ".permissions_by_mode.${mode^^}.${action} // false")
+    else
+      allowed=$(echo "$def_output" | jq -r ".permissions.${action} // false")
+    fi
+    
+    if [ "$allowed" = "true" ]; then
+      echo "✅ $agent_role: $action ALLOWED"
+      return 0
+    else
+      echo "🚫 $agent_role: $action BLOCKED"
+      return 1
+    fi
+  else
+    echo "⚠️  jq not installed - cannot validate permissions"
+    return 1
+  fi
+}
+
+# Show agent definition
+kiro-agent-info() {
+  local role="$1"
+  if [ -z "$role" ]; then
+    echo "Usage: kiro-agent-info <role>"
+    echo "Roles: dev test quality security contract performance refactor"
+    echo "       ria-read ria-plan ria-write master pr-review release devops"
+    return 1
+  fi
+  case "$role" in
+    dev)         _agent_def_dev | jq . ;;
+    test)        _agent_def_test | jq . ;;
+    quality)     _agent_def_quality | jq . ;;
+    security)    _agent_def_security | jq . ;;
+    contract)    _agent_def_contract | jq . ;;
+    performance) _agent_def_performance | jq . ;;
+    refactor)    _agent_def_refactor | jq . ;;
+    ria-read)    _agent_def_ria READ | jq . ;;
+    ria-plan)    _agent_def_ria PLAN | jq . ;;
+    ria-write)   _agent_def_ria WRITE | jq . ;;
+    master)      _agent_def_master | jq . ;;
+    pr-review)   _agent_def_pr_review | jq . ;;
+    release)     _agent_def_release | jq . ;;
+    devops)      _agent_def_devops | jq . ;;
+    *) echo "Unknown role: $role" ;;
+  esac
+}
+
+# ============================================================================
+# RIA Mode Management
+# ============================================================================
+
+# Current RIA mode tracking (per-service)
+_KIRO_RIA_MODE="READ"
+
+kiro-ria() {
+  local service="$1"
+  local mode="${2:-READ}"
+  mode=$(echo "$mode" | tr '[:lower:]' '[:upper:]')
+  
+  if [ -z "$service" ]; then
+    echo "Usage: kiro-ria <service> [READ|PLAN|WRITE]"
+    echo ""
+    echo "Modes:"
+    echo "  READ  (default) - Answer questions, trace flows, explain architecture"
+    echo "  PLAN  - Impact analysis, change proposals, generate diffs"
+    echo "  WRITE - Create branch, apply patch, run pipeline, open Draft MR"
+    echo ""
+    echo "Current mode: $_KIRO_RIA_MODE"
+    return 1
+  fi
+  
+  case "$mode" in
+    READ|PLAN)
+      _KIRO_RIA_MODE="$mode"
+      echo "🧠 RIA [$service] → mode: $mode"
+      ;;
+    WRITE)
+      echo "⚠️  WRITE mode requested for $service"
+      echo "   This allows: branch creation, code changes, MR creation"
+      echo "   This NEVER allows: merge, approve, push to protected branches"
+      read -p "   Confirm WRITE mode? (yes/no): " confirm
+      if [ "$confirm" = "yes" ]; then
+        _KIRO_RIA_MODE="WRITE"
+        echo "✍️  RIA [$service] → mode: WRITE (approved)"
+      else
+        echo "❌ WRITE mode denied. Staying in $_KIRO_RIA_MODE"
+      fi
+      ;;
+    *)
+      echo "❌ Invalid mode: $mode (use READ, PLAN, or WRITE)"
+      return 1
+      ;;
+  esac
+}
+
+# Quick aliases for RIA modes
+kiro-ria-read() { kiro-ria "${1:-$(basename $(pwd))}" READ; }
+kiro-ria-plan() { kiro-ria "${1:-$(basename $(pwd))}" PLAN; }
+kiro-ria-write() { kiro-ria "${1:-$(basename $(pwd))}" WRITE; }
+kiro-ria-status() { echo "RIA Mode: $_KIRO_RIA_MODE"; }
+
+# ============================================================================
+# Knowledge Indexing (RIA Knowledge Backbone)
+# ============================================================================
+# Maintains: code-index.json, dependency-graph.json, api-map.json, symbols.json
+
+# Initialize knowledge directory for a service
+kiro-knowledge-init() {
+  local service_dir="${1:-$(pwd)}"
+  local knowledge_dir="$service_dir/.kiro/knowledge"
+  
+  mkdir -p "$knowledge_dir"
+  
+  # Initialize empty knowledge files
+  [ ! -f "$knowledge_dir/code-index.json" ] && echo '{"files": {}, "last_indexed": ""}' > "$knowledge_dir/code-index.json"
+  [ ! -f "$knowledge_dir/dependency-graph.json" ] && echo '{"nodes": [], "edges": []}' > "$knowledge_dir/dependency-graph.json"
+  [ ! -f "$knowledge_dir/api-map.json" ] && echo '{"routes": [], "handlers": {}, "schemas": {}}' > "$knowledge_dir/api-map.json"
+  [ ! -f "$knowledge_dir/symbols.json" ] && echo '{"functions": [], "classes": [], "exports": []}' > "$knowledge_dir/symbols.json"
+  [ ! -f "$knowledge_dir/summaries.md" ] && echo "# Service Knowledge Summary\n\nGenerated: $(date -Iseconds)\n" > "$knowledge_dir/summaries.md"
+  
+  echo "✅ Knowledge directory initialized: $knowledge_dir"
+  echo "   Files created:"
+  ls -1 "$knowledge_dir"
+}
+
+# Build code index (file descriptions)
+kiro-knowledge-index() {
+  local service_dir="${1:-$(pwd)}"
+  local knowledge_dir="$service_dir/.kiro/knowledge"
+  
+  if [ ! -d "$knowledge_dir" ]; then
+    echo "Run 'kiro-knowledge-init' first"
+    return 1
+  fi
+  
+  echo "📚 Indexing codebase: $service_dir"
+  
+  local index_file="$knowledge_dir/code-index.json"
+  local tmp_file=$(mktemp)
+  
+  echo '{"files": {' > "$tmp_file"
+  local first=true
+  
+  # Index source files (skip node_modules, .git, dist, build, __pycache__)
+  while IFS= read -r -d '' file; do
+    local rel_path="${file#$service_dir/}"
+    local ext="${file##*.}"
+    local lines=$(wc -l < "$file" 2>/dev/null || echo 0)
+    
+    if [ "$first" = true ]; then
+      first=false
+    else
+      echo "," >> "$tmp_file"
+    fi
+    printf '    "%s": {"ext": "%s", "lines": %d}' "$rel_path" "$ext" "$lines" >> "$tmp_file"
+  done < <(find "$service_dir" -type f \
+    \( -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.go" -o -name "*.java" -o -name "*.rb" -o -name "*.rs" \) \
+    ! -path "*/node_modules/*" ! -path "*/.git/*" ! -path "*/dist/*" ! -path "*/build/*" ! -path "*/__pycache__/*" ! -path "*/.kiro/*" \
+    -print0)
+  
+  echo "" >> "$tmp_file"
+  echo "  }, \"last_indexed\": \"$(date -Iseconds)\", \"total_files\": $(find "$service_dir" -type f \( -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.go" \) ! -path "*/node_modules/*" ! -path "*/.git/*" | wc -l)}" >> "$tmp_file"
+  
+  mv "$tmp_file" "$index_file"
+  echo "✅ Code index updated: $(jq '.total_files // 0' "$index_file" 2>/dev/null || echo '?') files indexed"
+}
+
+# Build dependency graph (imports/requires)
+kiro-knowledge-deps() {
+  local service_dir="${1:-$(pwd)}"
+  local knowledge_dir="$service_dir/.kiro/knowledge"
+  
+  if [ ! -d "$knowledge_dir" ]; then
+    echo "Run 'kiro-knowledge-init' first"
+    return 1
+  fi
+  
+  echo "🔗 Building dependency graph: $service_dir"
+  
+  local graph_file="$knowledge_dir/dependency-graph.json"
+  local tmp_file=$(mktemp)
+  
+  echo '{"edges": [' > "$tmp_file"
+  local first=true
+  
+  # Python imports
+  while IFS= read -r -d '' file; do
+    local rel_path="${file#$service_dir/}"
+    grep -E "^(from|import) " "$file" 2>/dev/null | while read -r line; do
+      local dep=$(echo "$line" | sed -E 's/^(from |import )([^ ]+).*/\2/' | tr '.' '/')
+      if [ "$first" = true ]; then
+        first=false
+      else
+        printf "," >> "$tmp_file"
+      fi
+      printf '\n  {"source": "%s", "target": "%s"}' "$rel_path" "$dep" >> "$tmp_file"
+    done
+  done < <(find "$service_dir" -name "*.py" ! -path "*/node_modules/*" ! -path "*/.git/*" ! -path "*/__pycache__/*" -print0)
+  
+  # JS/TS imports
+  while IFS= read -r -d '' file; do
+    local rel_path="${file#$service_dir/}"
+    grep -E "^(import|const .* = require)" "$file" 2>/dev/null | grep -oE "(from ['\"]([^'\"]+)['\"]|require\(['\"]([^'\"]+)['\"]\))" | sed -E "s/(from |require\()//;s/['\"\)]//g" | while read -r dep; do
+      printf ',\n  {"source": "%s", "target": "%s"}' "$rel_path" "$dep" >> "$tmp_file"
+    done
+  done < <(find "$service_dir" \( -name "*.js" -o -name "*.ts" \) ! -path "*/node_modules/*" ! -path "*/.git/*" ! -path "*/dist/*" -print0)
+  
+  echo "" >> "$tmp_file"
+  echo '], "last_built": "'"$(date -Iseconds)"'"}' >> "$tmp_file"
+  
+  mv "$tmp_file" "$graph_file"
+  echo "✅ Dependency graph updated"
+}
+
+# Build API map (routes/endpoints)
+kiro-knowledge-api() {
+  local service_dir="${1:-$(pwd)}"
+  local knowledge_dir="$service_dir/.kiro/knowledge"
+  
+  if [ ! -d "$knowledge_dir" ]; then
+    echo "Run 'kiro-knowledge-init' first"
+    return 1
+  fi
+  
+  echo "🌐 Building API map: $service_dir"
+  
+  local api_file="$knowledge_dir/api-map.json"
+  local tmp_file=$(mktemp)
+  
+  echo '{"routes": [' > "$tmp_file"
+  local first=true
+  
+  # Detect Express/Fastify routes
+  grep -rn "\\.\(get\|post\|put\|patch\|delete\|all\)(" "$service_dir" \
+    --include="*.js" --include="*.ts" \
+    --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist 2>/dev/null | \
+    grep -v "test\|spec\|mock" | head -100 | while IFS=: read -r file line content; do
+      local rel="${file#$service_dir/}"
+      local method=$(echo "$content" | grep -oE "\.(get|post|put|patch|delete|all)" | tr -d '.')
+      local route=$(echo "$content" | grep -oE "['\"/][^'\"]*['\"]" | head -1 | tr -d "'\"")
+      if [ -n "$method" ] && [ -n "$route" ]; then
+        if [ "$first" = true ]; then first=false; else printf "," >> "$tmp_file"; fi
+        printf '\n  {"method": "%s", "path": "%s", "file": "%s", "line": %s}' "$method" "$route" "$rel" "$line" >> "$tmp_file"
+      fi
+  done
+  
+  # Detect Django/Flask routes
+  grep -rn "@app\.\(route\|get\|post\|put\|delete\)\|path(" "$service_dir" \
+    --include="*.py" \
+    --exclude-dir=__pycache__ --exclude-dir=.git --exclude-dir=venv 2>/dev/null | \
+    head -100 | while IFS=: read -r file line content; do
+      local rel="${file#$service_dir/}"
+      local route=$(echo "$content" | grep -oE "['\"/][^'\"]*['\"]" | head -1 | tr -d "'\"")
+      if [ -n "$route" ]; then
+        printf ',\n  {"method": "?", "path": "%s", "file": "%s", "line": %s}' "$route" "$rel" "$line" >> "$tmp_file"
+      fi
+  done
+  
+  echo "" >> "$tmp_file"
+  echo '], "last_built": "'"$(date -Iseconds)"'"}' >> "$tmp_file"
+  
+  mv "$tmp_file" "$api_file"
+  echo "✅ API map updated"
+}
+
+# Full knowledge rebuild
+kiro-knowledge-rebuild() {
+  local service_dir="${1:-$(pwd)}"
+  echo "🔄 Full knowledge rebuild for: $service_dir"
+  echo ""
+  kiro-knowledge-init "$service_dir"
+  kiro-knowledge-index "$service_dir"
+  kiro-knowledge-deps "$service_dir"
+  kiro-knowledge-api "$service_dir"
+  echo ""
+  echo "✅ Knowledge rebuild complete"
+  echo "   Location: $service_dir/.kiro/knowledge/"
+}
+
+# Show knowledge status
+kiro-knowledge-status() {
+  local service_dir="${1:-$(pwd)}"
+  local knowledge_dir="$service_dir/.kiro/knowledge"
+  
+  if [ ! -d "$knowledge_dir" ]; then
+    echo "❌ No knowledge directory found. Run: kiro-knowledge-init"
+    return 1
+  fi
+  
+  echo "📚 Knowledge Status: $service_dir"
+  echo "─────────────────────────────────────"
+  
+  for f in code-index.json dependency-graph.json api-map.json symbols.json; do
+    if [ -f "$knowledge_dir/$f" ]; then
+      local size=$(wc -c < "$knowledge_dir/$f")
+      local updated=$(jq -r '.last_indexed // .last_built // "unknown"' "$knowledge_dir/$f" 2>/dev/null || echo "?")
+      printf "  ✅ %-25s %6s bytes  (updated: %s)\n" "$f" "$size" "$updated"
+    else
+      printf "  ❌ %-25s missing\n" "$f"
+    fi
+  done
+}
+
+# ============================================================================
+# Agent Squad Orchestration
+# ============================================================================
+
+# Run full agent pipeline on a service (Dev → Test → Quality → Security → Contract → Perf)
+kiro-squad-pipeline() {
+  local service="${1:-$(basename $(pwd))}"
+  echo "🚀 Agent Squad Pipeline: $service"
+  echo "═══════════════════════════════════════"
+  echo ""
+  echo "Pipeline order:"
+  echo "  1. 🛠️  Dev Agent        → Code generation"
+  echo "  2. 🧪 Test Agent       → Test creation & execution"
+  echo "  3. 📏 Quality Agent    → Lint, format, architecture"
+  echo "  4. 🔐 Security Agent   → Vulnerability scan"
+  echo "  5. 📚 Contract Agent   → API schema validation"
+  echo "  6. ⚡ Performance Agent → Perf analysis"
+  echo "  7. 🧠 RIA (READ)       → Impact verification"
+  echo ""
+  echo "Use: kiro-cli chat --agent $service"
+  echo "Then instruct the agent to run the pipeline."
+}
+
+# List all agent roles and their capabilities
+kiro-squad-list() {
+  echo "🧩 AI Agent Squad - Per-Service Roles"
+  echo "══════════════════════════════════════"
+  echo ""
+  echo "Per-Service Agents:"
+  echo "  🛠️  dev          - Writes production code"
+  echo "  🧪 test         - Writes and runs tests"
+  echo "  📏 quality      - Linting, formatting, clean architecture"
+  echo "  🔐 security     - OWASP, auth, vulnerability scanning"
+  echo "  📚 contract     - OpenAPI/schema validation"
+  echo "  ⚡ performance  - Query optimization, latency analysis"
+  echo "  🔄 refactor     - Code simplification, dead code removal"
+  echo "  🧠 ria          - Repo Intelligence (READ/PLAN/WRITE)"
+  echo ""
+  echo "Global Agents:"
+  echo "  🎯 master       - Task decomposition, orchestration"
+  echo "  🤖 pr-review    - Code review on MRs"
+  echo "  🚀 release      - Versioning, changelog, tagging"
+  echo "  ⚙️  devops       - CI/CD, Docker, infrastructure"
+  echo ""
+  echo "Commands:"
+  echo "  kiro-agent-info <role>     - Show agent definition"
+  echo "  kiro-permissions           - Show permission matrix"
+  echo "  kiro-ria <svc> [mode]      - Switch RIA mode"
+  echo "  kiro-knowledge-rebuild     - Rebuild knowledge index"
+}
+
+# ============================================================================
+# AIDLC Workflow Integration
+# ============================================================================
+# AI-DLC (AI-Driven Development Life Cycle) steering rules
+# Phases: Inception → Construction → Operations
+
+# Initialize AIDLC for a project (copies steering rules)
+kiro-aidlc-init() {
+  local project_dir="${1:-$(pwd)}"
+  local rules_src="$HOME/.kiro/steering/aws-aidlc-rules"
+  local details_src="$HOME/.kiro/aws-aidlc-rule-details"
+  
+  if [ ! -d "$rules_src" ]; then
+    echo "❌ AIDLC rules not found at $rules_src"
+    echo "   Run: cp -R <aidlc-workflows>/aidlc-rules/aws-aidlc-rules ~/.kiro/steering/"
+    return 1
+  fi
+  
+  mkdir -p "$project_dir/.kiro/steering"
+  cp -R "$rules_src" "$project_dir/.kiro/steering/"
+  
+  if [ -d "$details_src" ]; then
+    cp -R "$details_src" "$project_dir/.kiro/"
+  fi
+  
+  echo "✅ AIDLC initialized for: $project_dir"
+  echo "   Phases: Inception → Construction → Operations"
+  echo ""
+  echo "   Start with: 'Describe what you want to build'"
+  echo "   The workflow will guide you through structured gates."
+}
+
+# Show AIDLC status for current project
+kiro-aidlc-status() {
+  local project_dir="${1:-$(pwd)}"
+  
+  echo "📋 AIDLC Status: $project_dir"
+  echo "─────────────────────────────────"
+  
+  if [ -d "$project_dir/.kiro/steering/aws-aidlc-rules" ]; then
+    echo "  ✅ Steering rules: loaded"
+  else
+    echo "  ❌ Steering rules: not found (run kiro-aidlc-init)"
+  fi
+  
+  if [ -d "$project_dir/.kiro/aws-aidlc-rule-details" ]; then
+    echo "  ✅ Rule details: loaded"
+  else
+    echo "  ⚠️  Rule details: not found"
+  fi
+  
+  if [ -d "$project_dir/aidlc-docs" ]; then
+    echo "  ✅ AIDLC docs: present"
+    echo "     Phases found:"
+    [ -d "$project_dir/aidlc-docs/inception" ] && echo "       📝 Inception"
+    [ -d "$project_dir/aidlc-docs/construction" ] && echo "       🔨 Construction"
+    [ -d "$project_dir/aidlc-docs/operations" ] && echo "       🚀 Operations"
+  else
+    echo "  ℹ️  AIDLC docs: not yet generated (start a conversation)"
+  fi
+}
+
+# ============================================================================
+# Help
+# ============================================================================
+
+kiro-help() {
+  cat << 'EOF'
+🧠 Kiro AI Agent System - Command Reference
+═══════════════════════════════════════════════
+
+BASIC:
+  kiro                          Smart start (auto-detect project)
+  kiro-<project>                Start agent for specific project
+  kiro-cleanup                  Delete all agents and history
+  kiro-regenerate <name>        Recreate agent with fresh detection
+  kiro-edit-prompt <name>       Edit agent prompt
+
+AGENT SQUAD:
+  kiro-squad-list               List all agent roles
+  kiro-squad-pipeline <svc>     Show pipeline order
+  kiro-agent-info <role>        Show agent tools/skills/permissions
+  kiro-permissions              Show permission matrix
+
+REPO INTELLIGENCE (RIA):
+  kiro-ria <svc> READ           Safe mode - questions only
+  kiro-ria <svc> PLAN           Impact analysis, change proposals
+  kiro-ria <svc> WRITE          Branch + patch + MR (needs approval)
+  kiro-ria-status               Show current RIA mode
+
+KNOWLEDGE INDEXING:
+  kiro-knowledge-init [dir]     Initialize knowledge directory
+  kiro-knowledge-index [dir]    Build code file index
+  kiro-knowledge-deps [dir]     Build dependency graph
+  kiro-knowledge-api [dir]      Build API route map
+  kiro-knowledge-rebuild [dir]  Full rebuild (all of the above)
+  kiro-knowledge-status [dir]   Show knowledge freshness
+
+AIDLC WORKFLOW:
+  kiro-aidlc-init [dir]         Initialize AIDLC for a project
+  kiro-aidlc-status [dir]       Show AIDLC phase status
+
+GIT + AI:
+  gcai                          Generate commit message from staged
+  greview                       Review current diff
+  greview-staged                Review staged changes
+  gpr-desc                      Generate PR description
+EOF
+}
+
+# ============================================================================
+# Cross-Service Master Agent (Multi-Service Orchestrator)
+# ============================================================================
+# Creates a master agent aware of ALL services in ~/applications
+# Drives development using AIDLC workflow + AI Engineering Toolkit skills
+# Communicates with per-service agents to coordinate cross-cutting changes
+
+kiro-master() {
+  local requirement="$1"
+  local apps_dir="$HOME/applications"
+  local agent_name="master-orchestrator"
+  local agent_file="$HOME/.kiro/agents/${agent_name}.json"
+  
+  # Discover all services
+  local services=""
+  local service_list=""
+  for dir in "$apps_dir"/*/; do
+    [ -d "$dir" ] || continue
+    local svc=$(basename "$dir")
+    services="${services}${svc}, "
+    local info=$(detect_project_info "$dir")
+    local stack=$(echo "$info" | cut -d'|' -f2)
+    service_list="${service_list}\\n- ${svc} (${stack})"
+  done
+  services="${services%, }"
+  
+  # Always recreate to pick up latest services
+  rm -f "$agent_file"
+  mkdir -p "$HOME/.kiro/agents"
+  
+  local prompt=$(cat << PROMPT
+You are the MASTER ORCHESTRATOR agent for a multi-service system.
+
+═══════════════════════════════════════════════════════════════
+ROLE: Cross-service coordinator and architect
+MODE: WRITE (full authority to delegate and drive implementation)
+═══════════════════════════════════════════════════════════════
+
+## Services Under Your Command
+${service_list}
+
+## Your Capabilities
+- Decompose requirements across multiple services
+- Delegate tasks to per-service agents (dev, test, quality, security, contract, performance, refactor, RIA)
+- Perform cross-service impact analysis before changes
+- Coordinate API contracts between services
+- Drive the full AIDLC workflow (Inception → Construction → Operations)
+
+## Mandatory Workflow: AIDLC (AI-Driven Development Life Cycle)
+You ALWAYS follow the AIDLC phases:
+
+### Phase 1: Inception
+- Requirements analysis (ask clarifying questions via markdown files)
+- User stories generation
+- Application design (architecture, data flow, API contracts)
+- Workflow planning (task breakdown per service)
+
+### Phase 2: Construction
+- Functional design per service
+- NFR requirements (security, performance, scalability)
+- Infrastructure design
+- Code generation (delegated to service agents)
+- Build & test (delegated to service agents)
+
+### Phase 3: Operations
+- Deployment planning
+- Monitoring and observability
+
+## Mandatory Skills: AI Engineering Toolkit
+Apply these on EVERY requirement:
+
+1. **Prompt Evaluator** - Score and optimize any prompts/instructions (≥70/100 baseline)
+2. **Context Budget Planner** - Optimize token allocation across services
+3. **RAG Pipeline Architect** - When building knowledge/search features
+4. **Agent Safety Guard** - Pre-launch security audit on any agent/AI feature
+5. **Eval Harness Builder** - Set up evaluation for AI-powered features
+6. **Product Sense Coach** - Validate product decisions before coding
+
+## Agent Squad (Per Service)
+For each service, you coordinate:
+  Dev → Test → Quality → Security → Contract → Performance → Refactor
+  With RIA (Repo Intelligence) for impact analysis
+
+## Rules
+- NEVER modify code directly — delegate to service agents
+- ALWAYS perform cross-service impact analysis before changes
+- ALWAYS use conventional commits: type(service): description
+- ALWAYS create Draft MRs — never merge
+- ALWAYS re-index knowledge after changes (kiro-knowledge-rebuild)
+- Ask questions via markdown files, wait for answers
+- Only YOU (the human) can approve and merge
+
+## Cross-Service Coordination
+Before any change:
+1. Ask RIA of each affected service: "Impact of this change?"
+2. Verify API contracts remain compatible
+3. Check for breaking changes across service boundaries
+4. Plan rollout order (dependencies first)
+
+## Output Structure
+/aidlc-docs/
+  inception/
+    requirements.md
+    user-stories.md
+    architecture.md
+    workflow-plan.md
+  construction/
+    functional-design/
+    nfr-design/
+    infrastructure/
+  operations/
+    deployment-plan.md
+
+Start by understanding the requirement, then drive through AIDLC phases.
+
+## Active Skills (auto-loaded)
+- caveman / caveman-compress: Context compression when sessions get long
+- caveman-commit: Structured conventional commits
+- caveman-review: Thorough code reviews
+- cavecrew: Multi-agent coordination
+- graphify: Build knowledge graphs from code for architecture mapping
+- prompt-evaluator, context-budget-planner, rag-pipeline-architect
+- agent-safety-guard, eval-harness-builder, product-sense-coach
+PROMPT
+)
+
+  local escaped_prompt=$(echo "$prompt" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+  
+  cat > "$agent_file" << EOF
+{
+  "name": "$agent_name",
+  "description": "Cross-service master orchestrator with AIDLC + AI Engineering Toolkit",
+  "prompt": "$escaped_prompt",
+  "tools": ["*"],
+  "welcomeMessage": "🎯 Master Orchestrator Ready\\\\n\\\\n📦 Services: $services\\\\n🔄 Workflow: AIDLC (Inception → Construction → Operations)\\\\n🧠 Skills: AI Engineering Toolkit (6 workflows active)\\\\n\\\\n💡 Describe your requirement and I'll drive it through the full lifecycle.\\\\n",
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "bash -c 'echo \"🎯 Master Agent initialized\" && echo \"Services: $services\" && echo \"Mode: WRITE (orchestrator)\" && echo \"Workflow: AIDLC + AI Engineering Toolkit\"'",
+        "timeout_ms": 5000
+      }
+    ]
+  }
+}
+EOF
+
+  echo "🎯 Master Orchestrator created"
+  echo "   Services: $services"
+  echo "   Workflow: AIDLC + AI Engineering Toolkit"
+  echo ""
+  
+  _KIRO_RIA_MODE="WRITE"
+  kiro-start-with-init "$agent_name"
+}
+
+alias km='kiro-master'
+
+# ============================================================================
+# Single-Service AIDLC Driver (kiro-drive / kd)
+# ============================================================================
+# Like kiro-master but scoped to ONE repo. Drives full AIDLC lifecycle
+# with AI Engineering Toolkit skills for a single service.
+
+kiro-drive() {
+  local service_dir="${1:-$(pwd)}"
+  local service_name=$(basename "$service_dir")
+  local agent_name="${service_name}-driver"
+  local agent_file="$HOME/.kiro/agents/${agent_name}.json"
+  
+  # Resolve if just a name was passed
+  if [ ! -d "$service_dir" ]; then
+    if [ -d "$HOME/applications/$1" ]; then
+      service_dir="$HOME/applications/$1"
+      service_name="$1"
+    elif [ -d "$HOME/my_applications/$1" ]; then
+      service_dir="$HOME/my_applications/$1"
+      service_name="$1"
+    else
+      echo "❌ Service not found: $1"
+      return 1
+    fi
+    agent_name="${service_name}-driver"
+    agent_file="$HOME/.kiro/agents/${agent_name}.json"
+  fi
+  
+  # Detect tech stack
+  local info=$(detect_project_info "$service_dir")
+  local tech_stack=$(echo "$info" | cut -d'|' -f2)
+  local project_type=$(echo "$info" | cut -d'|' -f1)
+  
+  # Always recreate for fresh context
+  rm -f "$agent_file"
+  mkdir -p "$HOME/.kiro/agents"
+  
+  local prompt=$(cat << PROMPT
+You are the AIDLC DRIVER for the ${service_name} service.
+
+═══════════════════════════════════════════════════════════════
+SERVICE: ${service_name}
+STACK: ${tech_stack}
+TYPE: ${project_type}
+LOCATION: ${service_dir}
+MODE: WRITE (full implementation authority)
+═══════════════════════════════════════════════════════════════
+
+## Your Role
+Single-service architect + implementer. You own the full lifecycle
+of any requirement in this repo — from inception to working code.
+
+## Mandatory Workflow: AIDLC (AI-Driven Development Life Cycle)
+You ALWAYS follow these phases in order:
+
+### Phase 1: Inception
+1. Requirements analysis — clarify scope, constraints, edge cases
+2. User stories — write acceptance criteria
+3. Application design — architecture decisions, data model, API design
+4. Workflow planning — break into implementable tasks
+
+### Phase 2: Construction
+1. Functional design — detailed component/module design
+2. NFR requirements — security, performance, scalability considerations
+3. Infrastructure design — if infra changes needed
+4. Code generation — implement following TDD (test first)
+5. Build & test — verify everything passes
+
+### Phase 3: Operations
+1. Deployment notes — what needs to change in CI/CD
+2. Monitoring — what to observe post-deploy
+
+## Mandatory Skills: AI Engineering Toolkit
+Apply these at the right phase:
+
+| Skill | When |
+|-------|------|
+| **Prompt Evaluator** | Any AI/LLM prompts in the codebase (score ≥70/100) |
+| **Context Budget Planner** | Any context window / token allocation decisions |
+| **RAG Pipeline Architect** | Any retrieval/search/knowledge features |
+| **Agent Safety Guard** | Pre-completion security audit |
+| **Eval Harness Builder** | Any AI feature needs eval metrics |
+| **Product Sense Coach** | Before coding — validate the "why" |
+
+## Agent Squad (You Coordinate)
+Run this pipeline on every change:
+  Dev → Test → Quality → Security → Contract → Performance
+
+## Rules
+- Follow existing code patterns and conventions in this repo
+- Write tests BEFORE implementation (TDD)
+- Conventional commits: type(scope): description
+- Create feature branches, never push to main/develop directly
+- Draft MRs only — never merge
+- Re-index knowledge after changes
+- Ask clarifying questions via markdown when requirements are ambiguous
+- Small, logical, reviewable commits
+
+## Output Structure
+aidlc-docs/
+  inception/requirements.md
+  inception/user-stories.md
+  inception/design.md
+  construction/functional-design.md
+  construction/nfr.md
+
+Start by understanding the requirement, then drive through AIDLC.
+
+## Active Skills (auto-loaded)
+- caveman / caveman-compress: Context compression when sessions get long
+- caveman-commit: Structured conventional commits
+- caveman-review: Thorough code reviews
+- cavecrew: Multi-agent coordination
+- graphify: Build knowledge graphs from code for architecture mapping
+- prompt-evaluator, context-budget-planner, rag-pipeline-architect
+- agent-safety-guard, eval-harness-builder, product-sense-coach
+PROMPT
+)
+
+  local escaped_prompt=$(echo "$prompt" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | sed ':a;N;$!ba;s/\n/\\n/g')
+  
+  cat > "$agent_file" << EOF
+{
+  "name": "$agent_name",
+  "description": "AIDLC driver for $service_name ($tech_stack)",
+  "prompt": "$escaped_prompt",
+  "tools": ["*"],
+  "welcomeMessage": "🚀 AIDLC Driver: $service_name\\\\n\\\\n📦 Stack: $tech_stack\\\\n🔄 Workflow: AIDLC (Inception → Construction → Operations)\\\\n🧠 Skills: AI Engineering Toolkit active\\\\n\\\\n💡 Describe your requirement and I'll drive it through the full lifecycle.\\\\n",
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": "bash -c 'echo \"🚀 AIDLC Driver: $service_name\" && echo \"Stack: $tech_stack\" && echo \"Mode: WRITE + AIDLC + AI Engineering Toolkit\"'",
+        "timeout_ms": 5000
+      }
+    ]
+  }
+}
+EOF
+
+  echo "🚀 AIDLC Driver created for: $service_name"
+  echo "   Stack: $tech_stack"
+  echo "   Workflow: AIDLC + AI Engineering Toolkit"
+  echo ""
+  
+  cd "$service_dir"
+  _KIRO_RIA_MODE="WRITE"
+  kiro-start-with-init "$agent_name"
+}
+
+alias kd='kiro-drive'
