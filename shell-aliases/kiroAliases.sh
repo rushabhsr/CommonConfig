@@ -167,58 +167,64 @@ You have deep knowledge of $tech_stack and follow industry best practices. You u
 
 Remember: Quality over speed. It's better to ask questions and get it right than to make assumptions and introduce bugs.
 
-**Active Skills (auto-loaded):**
-$(generate_skills_block)
+$(local _skills; _skills=$(generate_skills_block); [ -n "$_skills" ] && echo "**Active Skills (from ai-toolkit/):**${_skills}")
+
+**Always-On Skills (loaded for every session):**
+- **caveman**: Ultra-compressed communication mode — cuts token usage ~75%. Use when context is getting long or approaching limits.
+- **caveman-compress**: Compress memory/context files into caveman format to preserve critical info across sessions.
+- **graphify**: Build queryable knowledge graphs from code — use for architecture mapping, dependency analysis, and codebase understanding.
 EOF
 }
 
-# Generate skills block based on available installed skills
+# Extract description from SKILL.md YAML frontmatter (handles single-line and multi-line >)
+_extract_skill_desc() {
+  local file="$1"
+  local desc=""
+  desc=$(awk '/^---$/{n++; next} n==1 && /^description:/{
+    sub(/^description: */, ""); 
+    if ($0 == ">" || $0 == "|") { getline; sub(/^ +/, ""); }
+    gsub(/"/, ""); print; exit
+  }' "$file" | head -c 120)
+  echo "$desc"
+}
+
+# Generate skills block — scans ai-toolkit/ only when called
 generate_skills_block() {
-  local skills_dir="$HOME/.kiro/skills"
+  local toolkit_dir="$HOME/ai-toolkit"
   local block=""
-  
-  # Caveman - context compression & memory (all agents)
-  if [ -d "$skills_dir/caveman" ]; then
-    block="${block}\n- **caveman**: Context compression and memory management — use to preserve critical context across long sessions"
+
+  # Auto-discover skills from ai-toolkit/tools/*/skills/*/SKILL.md
+  if [ -d "$toolkit_dir/tools" ]; then
+    for skill_dir in "$toolkit_dir"/tools/*/skills/*/; do
+      [ -d "$skill_dir" ] || continue
+      local skill_name=$(basename "$skill_dir")
+      local skill_file="$skill_dir/SKILL.md"
+      local desc=""
+      if [ -f "$skill_file" ]; then
+        desc=$(_extract_skill_desc "$skill_file")
+      fi
+      [ -z "$desc" ] && desc="$skill_name skill"
+      block="${block}\n- **${skill_name}**: ${desc}"
+    done
   fi
-  if [ -d "$skills_dir/caveman-compress" ]; then
-    block="${block}\n- **caveman-compress**: Compress context window when approaching limits"
+
+  # Auto-discover skills from ai-toolkit/skills/*/  (cloned repos)
+  if [ -d "$toolkit_dir/skills" ]; then
+    while IFS= read -r -d '' skill_file; do
+      local skill_name=$(basename "$(dirname "$skill_file")")
+      local repo_name=$(echo "$skill_file" | sed "s|$toolkit_dir/skills/||" | cut -d'/' -f1)
+      local desc=""
+      desc=$(_extract_skill_desc "$skill_file")
+      [ -z "$desc" ] && desc="$skill_name skill"
+      block="${block}\n- **${skill_name}** [${repo_name}]: ${desc}"
+    done < <(find "$toolkit_dir/skills" -name "SKILL.md" -print0 2>/dev/null)
   fi
-  if [ -d "$skills_dir/caveman-commit" ]; then
-    block="${block}\n- **caveman-commit**: Generate structured conventional commits"
+
+  # Graphify (tool-level, no nested skills dir)
+  if [ -d "$toolkit_dir/tools/graphify" ]; then
+    block="${block}\n- **graphify**: Build queryable knowledge graphs from code — architecture mapping and dependency analysis"
   fi
-  if [ -d "$skills_dir/caveman-review" ]; then
-    block="${block}\n- **caveman-review**: Perform thorough code reviews"
-  fi
-  if [ -d "$skills_dir/cavecrew" ]; then
-    block="${block}\n- **cavecrew**: Multi-agent coordination patterns"
-  fi
-  
-  # Graphify - knowledge graph (all agents)
-  if [ -d "$skills_dir/graphify" ]; then
-    block="${block}\n- **graphify**: Build queryable knowledge graphs from code — use for architecture mapping, dependency analysis, and codebase understanding"
-  fi
-  
-  # AI Engineering Toolkit (all agents)
-  if [ -d "$skills_dir/prompt-evaluator" ]; then
-    block="${block}\n- **prompt-evaluator**: Score prompts across 8 dimensions (0-100)"
-  fi
-  if [ -d "$skills_dir/context-budget-planner" ]; then
-    block="${block}\n- **context-budget-planner**: Optimize token allocation across context zones"
-  fi
-  if [ -d "$skills_dir/agent-safety-guard" ]; then
-    block="${block}\n- **agent-safety-guard**: 65-point security audit for AI agents"
-  fi
-  if [ -d "$skills_dir/eval-harness-builder" ]; then
-    block="${block}\n- **eval-harness-builder**: Build evaluation frameworks for LLM features"
-  fi
-  if [ -d "$skills_dir/rag-pipeline-architect" ]; then
-    block="${block}\n- **rag-pipeline-architect**: Design end-to-end RAG systems"
-  fi
-  if [ -d "$skills_dir/product-sense-coach" ]; then
-    block="${block}\n- **product-sense-coach**: Validate product decisions before coding"
-  fi
-  
+
   echo -e "$block"
 }
 
@@ -294,13 +300,13 @@ kiro() {
   local current_dir=$(pwd)
   
   # Quick check: only detect if in applications directory
-  if [[ "$current_dir" == "$HOME/applications/"* ]] || [[ "$current_dir" == "$HOME/my_applications/"* ]]; then
+  if [[ "$current_dir" == "$HOME/applications/"* ]] || [[ "$current_dir" == "$HOME/applications/"* ]]; then
     # Extract project name (first directory after applications/)
     local project_path
     if [[ "$current_dir" == "$HOME/applications/"* ]]; then
       project_path="${current_dir#$HOME/applications/}"
     else
-      project_path="${current_dir#$HOME/my_applications/}"
+      project_path="${current_dir#$HOME/applications/}"
     fi
     
     local project_name=$(echo "$project_path" | cut -d'/' -f1)
@@ -311,7 +317,7 @@ kiro() {
     if [[ "$current_dir" == "$HOME/applications/"* ]]; then
       project_root="$HOME/applications/$project_name"
     else
-      project_root="$HOME/my_applications/$project_name"
+      project_root="$HOME/applications/$project_name"
     fi
     
     # Ensure agent exists
@@ -321,7 +327,7 @@ kiro() {
     kiro-start-with-init "$agent_name" "$@"
   else
     # Not in a project directory, use default (no detection)
-    kiro-cli chat "$@"
+    kiro-cli chat --resume "$@"
   fi
 }
 
@@ -331,25 +337,13 @@ kiro() {
 
 create_kiro_aliases() {
   local apps_dir="$HOME/applications"
-  local my_apps_dir="$HOME/my_applications"
   
-  # Create aliases for ~/applications
   if [ -d "$apps_dir" ]; then
     for dir in "$apps_dir"/*/; do
       [ -d "$dir" ] || continue
       local folder_name=$(basename "$dir")
-      local agent_name=$(echo "$folder_name" | sed 's/_/-/g')
-      
-      alias "kiro-$folder_name"="ensure_kiro_agent '$agent_name' '$dir' && cd '$dir' && kiro-start-with-init '$agent_name'"
-      alias "k-$folder_name"="ensure_kiro_agent '$agent_name' '$dir' && cd '$dir' && _KIRO_RIA_MODE=WRITE && echo '✍️  RIA mode: WRITE' && kiro-start-with-init '$agent_name'"
-    done
-  fi
-  
-  # Create aliases for ~/my_applications
-  if [ -d "$my_apps_dir" ]; then
-    for dir in "$my_apps_dir"/*/; do
-      [ -d "$dir" ] || continue
-      local folder_name=$(basename "$dir")
+      # Skip folders with spaces (invalid for aliases)
+      [[ "$folder_name" == *" "* ]] && continue
       local agent_name=$(echo "$folder_name" | sed 's/_/-/g')
       
       alias "kiro-$folder_name"="ensure_kiro_agent '$agent_name' '$dir' && cd '$dir' && kiro-start-with-init '$agent_name'"
@@ -369,6 +363,70 @@ kiro-start-with-init() {
 
 # Generate aliases on shell startup
 create_kiro_aliases
+
+# Auto-create agents for all projects in ~/applications/ (runs in background)
+_kiro_ensure_all_agents() {
+  for dir in "$HOME/applications"/*/; do
+    [ -d "$dir" ] || continue
+    local folder_name=$(basename "$dir")
+    [[ "$folder_name" == *" "* ]] && continue
+    local agent_name=$(echo "$folder_name" | sed 's/_/-/g')
+    [ -f "$HOME/.kiro/agents/${agent_name}.json" ] && continue
+    ensure_kiro_agent "$agent_name" "$dir"
+  done
+}
+_kiro_ensure_all_agents &>/dev/null &
+disown 2>/dev/null
+
+# ============================================================================
+# Agent Memory (persistent memory server)
+# ============================================================================
+
+alias mem-start='agentmemory &'
+alias mem-stop='agentmemory stop'
+alias mem-status='curl -s http://localhost:3111/agentmemory/health 2>/dev/null | jq . || echo "❌ agentmemory not running. Start with: mem-start"'
+alias mem-viewer='echo "Opening viewer at http://localhost:3113" && open http://localhost:3113 2>/dev/null || xdg-open http://localhost:3113 2>/dev/null'
+alias mem-search='f() { curl -s -X POST http://localhost:3111/agentmemory/smart-search -H "Content-Type: application/json" -d "{\"query\": \"$*\"}" | jq .; }; f'
+
+# ============================================================================
+# Skills Management (npx skills CLI + ai-toolkit/skills/)
+# ============================================================================
+
+# Install skills from any GitHub repo into kiro-cli
+alias kiro-skills-add='npx skills add -a kiro-cli -g'
+alias kiro-skills-list='npx skills list -a kiro-cli'
+alias kiro-skills-find='npx skills find'
+alias kiro-skills-update='npx skills update -a kiro-cli -g'
+alias kiro-skills-remove='npx skills remove -a kiro-cli -g'
+
+# Update all cloned skill repos in ai-toolkit/skills/
+kiro-skills-pull() {
+  echo "🔄 Updating skill repos in ~/ai-toolkit/skills/..."
+  for dir in "$HOME/ai-toolkit/skills"/*/; do
+    [ -d "$dir/.git" ] || continue
+    local name=$(basename "$dir")
+    echo -n "  $name: "
+    git -C "$dir" pull --ff-only 2>&1 | tail -1
+  done
+  echo "✅ Done"
+}
+
+# Show all available skills from ai-toolkit/
+kiro-skills-catalog() {
+  echo "📚 Skills Catalog (~/ai-toolkit/)"
+  echo "═══════════════════════════════════"
+  for dir in "$HOME/ai-toolkit/skills"/*/; do
+    [ -d "$dir" ] || continue
+    local name=$(basename "$dir")
+    local count=$(find "$dir" -name "SKILL.md" | wc -l)
+    printf "  %-25s %3d skills\n" "$name" "$count"
+  done
+  local tools_count=$(find "$HOME/ai-toolkit/tools" -name "SKILL.md" 2>/dev/null | wc -l)
+  printf "  %-25s %3d skills\n" "tools/ (built-in)" "$tools_count"
+  echo "─────────────────────────────────────"
+  local total=$(find "$HOME/ai-toolkit" -name "SKILL.md" | wc -l)
+  printf "  %-25s %3d skills\n" "TOTAL" "$total"
+}
 
 # ============================================================================
 # Kiro Utility Aliases
@@ -483,8 +541,8 @@ kiro-regenerate() {
   local project_dir=""
   if [ -d "$HOME/applications/$agent_name" ]; then
     project_dir="$HOME/applications/$agent_name"
-  elif [ -d "$HOME/my_applications/$agent_name" ]; then
-    project_dir="$HOME/my_applications/$agent_name"
+  elif [ -d "$HOME/applications/$agent_name" ]; then
+    project_dir="$HOME/applications/$agent_name"
   else
     echo "Error: Could not find project directory for $agent_name"
     return 1
@@ -511,6 +569,15 @@ kiro-regenerate-all() {
   
   echo ""
   echo "✓ All agents regenerated"
+}
+
+# Wrap kiro-cli: bare invocation resumes, everything else passes through
+kiro-cli() {
+  if [ $# -eq 0 ]; then
+    command kiro-cli chat --resume
+  else
+    command kiro-cli "$@"
+  fi
 }
 
 alias kiro-list='kiro-cli agent list'
@@ -1208,12 +1275,18 @@ kiro-squad-list() {
 # Initialize AIDLC for a project (copies steering rules)
 kiro-aidlc-init() {
   local project_dir="${1:-$(pwd)}"
-  local rules_src="$HOME/.kiro/steering/aws-aidlc-rules"
-  local details_src="$HOME/.kiro/aws-aidlc-rule-details"
+  
+  # Source from ai-toolkit (canonical) or fallback to .kiro (legacy)
+  local rules_src="$HOME/ai-toolkit/workflows/aidlc-workflows/aidlc-rules/aws-aidlc-rules"
+  [ ! -d "$rules_src" ] && rules_src="$HOME/.kiro/steering/aws-aidlc-rules"
+  
+  local details_src="$HOME/ai-toolkit/workflows/aidlc-workflows/aidlc-rules/aws-aidlc-rule-details"
+  [ ! -d "$details_src" ] && details_src="$HOME/.kiro/aws-aidlc-rule-details"
   
   if [ ! -d "$rules_src" ]; then
-    echo "❌ AIDLC rules not found at $rules_src"
-    echo "   Run: cp -R <aidlc-workflows>/aidlc-rules/aws-aidlc-rules ~/.kiro/steering/"
+    echo "❌ AIDLC rules not found"
+    echo "   Expected at: ~/ai-toolkit/workflows/aidlc-workflows/aidlc-rules/"
+    echo "   Or fallback: ~/.kiro/steering/aws-aidlc-rules/"
     return 1
   fi
   
@@ -1226,6 +1299,7 @@ kiro-aidlc-init() {
   
   echo "✅ AIDLC initialized for: $project_dir"
   echo "   Phases: Inception → Construction → Operations"
+  echo "   Source: $rules_src"
   echo ""
   echo "   Start with: 'Describe what you want to build'"
   echo "   The workflow will guide you through structured gates."

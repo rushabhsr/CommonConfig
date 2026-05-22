@@ -1,48 +1,65 @@
 # Kiro AI Agent System
 
-A shell-based AI agent orchestration system that turns `kiro-cli` into a multi-agent development platform with structured workflows, permission enforcement, and knowledge indexing.
+A portable, self-bootstrapping AI development environment that turns `kiro-cli` into a multi-agent platform with persistent memory, 229+ skills, structured workflows, and cross-project orchestration.
 
-## Setup
+## First-Time Setup (New Device)
+
+```bash
+# 1. Clone this repo
+git clone git@github.com:rushabhsr/CommonConfig.git ~/CommonConfig
+
+# 2. Run bootstrap (installs everything)
+bash ~/CommonConfig/kiro-bootstrap.sh
+
+# 3. Reload shell
+source ~/.bashrc
+```
+
+**That's it.** The bootstrap handles:
+- iii-engine + agentmemory (persistent memory server)
+- 229+ skills from 8 curated GitHub repos → `~/ai-toolkit/skills/`
+- MCP wiring (agentmemory → kiro-cli)
+- Custom slash commands → `~/.kiro/skills/`
+- `.bashrc` updates (PATH, sources, agentmemory auto-start)
+- Agents auto-create for all projects in `~/applications/`
 
 ### Prerequisites
 
-- `kiro-cli` installed and configured
+- `git`, `node` (v20+), `npm`
+- `kiro-cli` installed ([kiro.dev](https://kiro.dev))
 - `jq` (optional, for agent info display)
-- `git` for version control operations
 
-### Installation
-
-```bash
-# 1. Source the aliases in your shell
-echo 'source ~/CommonConfig/shell-aliases/kiroAliases.sh' >> ~/.bashrc
-source ~/.bashrc
-
-# 2. Install AI Engineering Toolkit skills
-git clone https://github.com/viliawang-pm/ai-engineering-toolkit.git ~/applications/ai-engineering-toolkit
-cp -r ~/applications/ai-engineering-toolkit/skills/* ~/.kiro/skills/
-
-# 3. Install AIDLC workflow rules (from aidlc-workflows repo)
-cp -R <aidlc-workflows>/aidlc-rules/aws-aidlc-rules ~/.kiro/steering/
-cp -R <aidlc-workflows>/aidlc-rules/aws-aidlc-rule-details ~/.kiro/
-
-# 4. Verify
-kiro-help
-```
-
-### Project Structure Expected
+### Project Structure
 
 ```
-~/applications/
-  ├── user-service/
-  ├── payment-gateway/
-  ├── frontend-app/
+~/applications/          ← Your projects (agents auto-created per folder)
+  ├── ArtTales/          → React, Next.js, TypeScript
+  ├── metaxis/           → React
+  ├── karmine/           → MySQL
+  ├── rm-law/            → React
   └── ...
 
-~/my_applications/
-  └── ...
-```
+~/ai-toolkit/            ← Skills & tools (cloned by bootstrap)
+  ├── skills/            → 229 SKILL.md files from 8 repos
+  │   ├── superpowers/         (202k⭐) TDD, debugging, planning
+  │   ├── anthropic-skills/    (139k⭐) Official Anthropic skills
+  │   ├── addy-agent-skills/   (44.6k⭐) Spec→Plan→Build→Test→Review→Ship
+  │   ├── google-cloud-skills/ (10.3k⭐) GCP: BigQuery, Cloud Run, Firebase
+  │   ├── techleads-skills/    (4.4k⭐) AWS, Playwright, Figma, security
+  │   ├── cloudflare-skills/   (1.6k⭐) Workers, Agents SDK, Durable Objects
+  │   ├── letta-skills/        (105⭐) GitHub, Slack, Notion, Discord, PDF
+  │   └── agent-browser/       Browser automation, Electron, QA/dogfood
+  └── tools/             → Always-on tools
+      ├── caveman/             Context compression (~75% token savings)
+      ├── graphify/            Code → knowledge graph
+      └── ai-engineering-toolkit/  Prompt eval, RAG design, agent safety
 
-Agents are auto-created per project directory.
+~/CommonConfig/          ← This repo (portable across devices)
+  ├── kiro-bootstrap.sh  → One-command setup
+  ├── kiro-skills/       → Custom slash commands
+  └── shell-aliases/
+      └── kiroAliases.sh → All agent logic
+```
 
 ---
 
@@ -51,203 +68,180 @@ Agents are auto-created per project directory.
 | Command | What It Does |
 |---------|-------------|
 | `kiro` | Smart start — auto-detects project from `pwd` |
-| `kiro-<svc>` | Start agent for a service (READ mode) |
-| `k-<svc>` | Start agent for a service (WRITE mode) |
-| `kd <svc>` | **Single-service AIDLC driver** (full lifecycle) |
-| `km` | **Cross-service master orchestrator** (full lifecycle) |
+| `kiro-cli` | Resume last chat in current directory |
+| `kiro-<project>` | Start agent for a project (READ mode) |
+| `k-<project>` | Start agent for a project (WRITE mode) |
+| `kd <project>` | Single-project AIDLC driver (full lifecycle) |
+| `km` | Cross-project master orchestrator |
+
+### Slash Commands (inside a session)
+
+| Command | What It Does |
+|---------|-------------|
+| `/git-review` | Review current git diff for bugs/issues |
+| `/git-commit-msg` | Generate conventional commit from staged changes |
+| `/git-pr-desc` | Generate PR description from branch commits |
+| `/orchestrate` | Spawn project-specific sub-agents for cross-project work |
 
 ---
 
-## Commands
+## Persistent Memory (agentmemory)
 
-### Basic Agent Management
+All agents share a persistent memory server that eliminates re-explaining across sessions.
+
+| Command | What It Does |
+|---------|-------------|
+| `mem-start` | Start agentmemory (auto-starts on shell login) |
+| `mem-stop` | Stop the server |
+| `mem-status` | Check health |
+| `mem-viewer` | Open web UI at localhost:3113 |
+| `mem-search <query>` | Search memory from terminal |
+
+**How it works:** agentmemory captures observations from every session via MCP hooks, compresses them into searchable memory, and injects relevant context (~2000 tokens) at the start of each new session. 92% fewer tokens vs loading full context.
+
+**Data location:** `~/data/state_store.db` (iii-engine KV store)
+
+---
+
+## Skills Management
+
+| Command | What It Does |
+|---------|-------------|
+| `kiro-skills-catalog` | Show all available skills (229+) |
+| `kiro-skills-pull` | `git pull` all skill repos |
+| `kiro-skills-add <repo>` | Install from any GitHub repo via `npx skills` |
+| `kiro-skills-find` | Search the skills ecosystem |
+
+Skills are auto-discovered from `~/ai-toolkit/` and included in agent prompts. Always-on skills (every session): **caveman**, **caveman-compress**, **graphify**.
+
+---
+
+## Agent Management
 
 ```bash
-kiro                        # Auto-detect project, start agent
-kiro-<project>              # Start specific project agent (READ mode)
-k-<project>                 # Start specific project agent (WRITE mode)
 kiro-cleanup                # Delete all agents and history
 kiro-regenerate <name>      # Recreate agent with fresh tech detection
 kiro-regenerate-all         # Recreate all agents
 kiro-edit-prompt <name>     # Edit agent JSON directly
+kiro-agents                 # List all agent files
+kiro-show <name>            # Pretty-print agent JSON
 ```
 
-### AIDLC-Driven Development
+---
 
-```bash
-# Single service — full AIDLC + AI Engineering Toolkit
-kd user-service             # or: kiro-drive user-service
-kiro-drive                  # Uses current directory
-
-# Multi-service — orchestrates across all services
-km                          # or: kiro-master
-```
-
-Both `kd` and `km` enforce:
-- **AIDLC phases**: Inception → Construction → Operations
-- **AI Engineering Toolkit**: Prompt Evaluator, Context Budget Planner, RAG Architect, Agent Safety Guard, Eval Harness Builder, Product Sense Coach
-
-### Agent Squad
+## Agent Squad & Permissions
 
 ```bash
 kiro-squad-list             # List all agent roles
-kiro-squad-pipeline <svc>   # Show pipeline order for a service
-kiro-agent-info <role>      # Show tools/skills/permissions for a role
+kiro-agent-info <role>      # Show tools/skills/permissions
 kiro-permissions            # Display full permission matrix
 ```
 
-Available roles: `dev`, `test`, `quality`, `security`, `contract`, `performance`, `refactor`, `ria-read`, `ria-plan`, `ria-write`, `master`, `pr-review`, `release`, `devops`
+Roles: `dev`, `test`, `quality`, `security`, `contract`, `performance`, `refactor`, `ria-read`, `ria-plan`, `ria-write`, `master`, `pr-review`, `release`, `devops`
 
-### Repo Intelligence Agent (RIA)
+**Rule: No agent can ever merge. Only you.**
+
+---
+
+## Repo Intelligence Agent (RIA)
 
 ```bash
-kiro-ria <svc> READ         # Default — answer questions only
-kiro-ria <svc> PLAN         # Impact analysis, change proposals
-kiro-ria <svc> WRITE        # Branch + patch + MR (requires confirmation)
+kiro-ria <project> READ     # Answer questions, trace flows
+kiro-ria <project> PLAN     # Impact analysis, change proposals
+kiro-ria <project> WRITE    # Branch + patch + Draft MR (requires confirmation)
 kiro-ria-status             # Show current mode
 ```
 
-### Knowledge Indexing
+---
+
+## Knowledge Indexing
 
 ```bash
-kiro-knowledge-init [dir]       # Initialize knowledge directory
-kiro-knowledge-index [dir]      # Build code file index
-kiro-knowledge-deps [dir]       # Build dependency graph (imports)
-kiro-knowledge-api [dir]        # Build API route map
-kiro-knowledge-rebuild [dir]    # Full rebuild (all above)
+kiro-knowledge-rebuild [dir]    # Full rebuild (index + deps + API map)
 kiro-knowledge-status [dir]     # Show index freshness
 ```
 
-Creates under `<project>/.kiro/knowledge/`:
-- `code-index.json` — file inventory with line counts
-- `dependency-graph.json` — import/require edges
-- `api-map.json` — routes, handlers, endpoints
-- `symbols.json` — functions, classes, exports
-- `summaries.md` — human-readable overview
+Creates `<project>/.kiro/knowledge/`: code-index.json, dependency-graph.json, api-map.json, symbols.json, summaries.md
 
-### AIDLC Workflow
+---
+
+## AIDLC Workflow
 
 ```bash
 kiro-aidlc-init [dir]       # Copy AIDLC steering rules to a project
-kiro-aidlc-status [dir]     # Check which phases have been completed
+kiro-aidlc-status [dir]     # Check phase status
 ```
 
-### Git + AI
+Phases: **Inception** (requirements, design) → **Construction** (implement, test) → **Operations** (deploy, monitor)
+
+---
+
+## Workflows
+
+### Single-Project Requirement
+```bash
+cd ~/applications/metaxis
+kd .
+# "Add dark mode toggle to the settings page"
+# Agent drives: Inception → Construction → Operations
+```
+
+### Cross-Project Requirement
+```bash
+km
+# "Add blog API in karmine and display posts in metaxis"
+# Master spawns karmine agent (API) → metaxis agent (frontend)
+```
+
+### Quick Fix
+```bash
+k-metaxis
+# "Fix the null check in Header.tsx line 12"
+# Direct WRITE mode, no ceremony
+```
+
+### Inside a Session
+```
+> /git-review          ← review your current diff
+> /git-commit-msg      ← generate commit message
+> /orchestrate         ← delegate to other project agents
+```
+
+---
+
+## Updating
 
 ```bash
-gcai                        # Generate commit message from staged changes
-greview                     # AI review of current diff
-greview-staged              # AI review of staged changes
-gpr-desc                    # Generate PR description
-gpr-desc-from <branch>      # PR description from custom base
-gexplain [base] [head]      # Explain diff between branches
+# Update all skill repos
+kiro-skills-pull
+
+# Update agentmemory
+npm update -g @agentmemory/agentmemory
+
+# Regenerate agents after kiroAliases.sh changes
+kiro-regenerate-all
 ```
 
 ---
 
 ## Architecture
 
-### Agent Hierarchy
-
 ```
 You (Human) ← final authority, only one who merges
   │
-  ├── Master Orchestrator (km) ← cross-service coordination
-  │     └── delegates to per-service agents
+  ├── Master Orchestrator (km) ← cross-project coordination
+  │     └── spawns project-specific sub-agents
   │
-  └── AIDLC Driver (kd) ← single-service full lifecycle
+  └── AIDLC Driver (kd) ← single-project full lifecycle
         └── coordinates agent squad internally
 
-Per-Service Agent Squad:
+Per-Project Agent Squad:
   Dev → Test → Quality → Security → Contract → Performance → Refactor
                               ↓
                     RIA (Repo Intelligence)
+
+Infrastructure (always running):
+  agentmemory ← persistent memory across all sessions
+  caveman     ← token compression when context gets long
+  graphify    ← code knowledge graphs
 ```
-
-### Permission Model
-
-Every agent has declared tools, skills, and hard restrictions.
-
-```
-Agent               Write Code   Git Access   MR Create   Merge
-─────────────────────────────────────────────────────────────────
-Dev Agent              ✅           ✅            ❌         ❌
-Test Agent             ❌           ❌            ❌         ❌
-Quality Agent          ✅           ❌            ❌         ❌
-Security Agent         ❌           ❌            ❌         ❌
-RIA (READ)             ❌           ❌            ❌         ❌
-RIA (WRITE)            ✅           ✅            ✅         ❌
-Master Agent           ❌           ❌            ❌         ❌
-```
-
-**Rule: No agent can ever merge. Only you.**
-
-### RIA Modes
-
-| Mode | Can Do | Cannot Do |
-|------|--------|-----------|
-| READ | Answer questions, trace flows, explain code | Modify anything |
-| PLAN | Generate impact-analysis.md, proposed-diff.patch | Edit files |
-| WRITE | Create branch, apply patch, open Draft MR | Merge, approve, push to protected branches |
-
----
-
-## Workflows
-
-### Single-Service Requirement (Recommended)
-
-```bash
-cd ~/applications/user-service
-kd .
-# Describe: "Add email verification to signup flow"
-# Agent drives: Inception → Construction → Operations
-```
-
-### Cross-Service Requirement
-
-```bash
-km
-# Describe: "Add SSO across user-service and admin-portal"
-# Agent coordinates both services through AIDLC
-```
-
-### Quick Fix (No Ceremony)
-
-```bash
-k-user-service
-# "Fix the null pointer in auth.py line 42"
-# Direct WRITE mode, no AIDLC overhead
-```
-
-### Knowledge-First Approach
-
-```bash
-cd ~/applications/payment-gateway
-kiro-knowledge-rebuild
-kiro-ria payment-gateway READ
-# "What happens when a refund is initiated?"
-# "Which services depend on the webhook handler?"
-```
-
----
-
-## How AIDLC Works
-
-1. **You describe a requirement** in natural language
-2. **Inception**: Agent writes questions to a markdown file → you answer → agent generates design docs
-3. **Construction**: Agent implements following TDD, runs the agent squad pipeline
-4. **Operations**: Agent produces deployment notes
-
-At each phase gate, you review and approve before proceeding.
-
-Key principle: **Questions go into files, not chat.** This creates a durable decision record.
-
----
-
-## Tips
-
-- Run `kiro-knowledge-rebuild` after major changes to keep RIA accurate
-- Use `kiro-aidlc-init` on new projects before starting `kd`
-- `kiro-permissions` is your quick reference for what each agent can touch
-- Install `jq` for pretty-printed agent definitions via `kiro-agent-info`
-- Agents are stored in `~/.kiro/agents/*.json` — fully editable
