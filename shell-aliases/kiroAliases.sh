@@ -192,6 +192,10 @@ _extract_skill_desc() {
 generate_skills_block() {
   local toolkit_dir="$HOME/ai-toolkit"
   local block=""
+  local max_desc=80
+  # Only include skills from these high-value repos in the prompt
+  local include_repos="ai-engineering-toolkit|superpowers|anthropic-skills|addy-agent-skills|kiro-on-demand"
+  local skipped=0
 
   # Auto-discover skills from ai-toolkit/tools/*/skills/*/SKILL.md
   if [ -d "$toolkit_dir/tools" ]; then
@@ -204,6 +208,7 @@ generate_skills_block() {
         desc=$(_extract_skill_desc "$skill_file")
       fi
       [ -z "$desc" ] && desc="$skill_name skill"
+      desc="${desc:0:$max_desc}"
       block="${block}\n- **${skill_name}**: ${desc}"
     done
   fi
@@ -213,9 +218,15 @@ generate_skills_block() {
     while IFS= read -r -d '' skill_file; do
       local skill_name=$(basename "$(dirname "$skill_file")")
       local repo_name=$(echo "$skill_file" | sed "s|$toolkit_dir/skills/||" | cut -d'/' -f1)
+      # Only include high-value repos in prompt
+      if ! echo "$repo_name" | grep -qE "$include_repos"; then
+        skipped=$((skipped + 1))
+        continue
+      fi
       local desc=""
       desc=$(_extract_skill_desc "$skill_file")
       [ -z "$desc" ] && desc="$skill_name skill"
+      desc="${desc:0:$max_desc}"
       block="${block}\n- **${skill_name}** [${repo_name}]: ${desc}"
     done < <(find "$toolkit_dir/skills" -name "SKILL.md" -print0 2>/dev/null)
   fi
@@ -223,6 +234,10 @@ generate_skills_block() {
   # Graphify (tool-level, no nested skills dir)
   if [ -d "$toolkit_dir/tools/graphify" ]; then
     block="${block}\n- **graphify**: Build queryable knowledge graphs from code — architecture mapping and dependency analysis"
+  fi
+
+  if [ $skipped -gt 0 ]; then
+    block="${block}\n\n(+${skipped} more skills available in ~/ai-toolkit/skills/ — run kiro-skills-catalog to browse)"
   fi
 
   echo -e "$block"
@@ -274,6 +289,7 @@ ensure_kiro_agent() {
   "description": "AI agent for $agent_name project ($tech_stack)",
   "prompt": "$escaped_prompt",
   "tools": $tools,
+  "resources": ["skill://.kiro/skills/**/SKILL.md"],
   "welcomeMessage": "$welcome_msg",
   "hooks": {
     "agentSpawn": [
@@ -293,6 +309,34 @@ ensure_kiro_agent() {
 EOF
     echo "Agent created: $agent_file"
   fi
+
+  # Ensure core slash commands are available in project-level skills
+  _kiro_ensure_core_skills "$project_dir"
+}
+
+# Ensure all / commands available: symlink .kiro/skills + add resource to agent JSON
+_kiro_ensure_core_skills() {
+  local project_dir="$1"
+  local agent_name=$(basename "$project_dir")
+  local agent_file="$HOME/.kiro/agents/${agent_name}.json"
+  # Symlink project .kiro/skills → global so relative skill:// paths resolve
+  if [ -d "${project_dir}.kiro" ]; then
+    [ -e "${project_dir}.kiro/skills" ] && [ ! -L "${project_dir}.kiro/skills" ] && rm -rf "${project_dir}.kiro/skills"
+    [ ! -e "${project_dir}.kiro/skills" ] && ln -sf "$HOME/.kiro/skills" "${project_dir}.kiro/skills"
+  fi
+  # Ensure agent JSON has skill resource
+  [ ! -f "$agent_file" ] && return 0
+  python3 -c "
+import json
+with open('$agent_file') as f:
+    d = json.load(f)
+r = 'skill://.kiro/skills/**/SKILL.md'
+if r not in d.get('resources', []):
+    d['resources'] = d.get('resources', []) + [r]
+    with open('$agent_file', 'w') as f:
+        json.dump(d, f, indent=2)
+" 2>/dev/null
+  return 0
 }
 
 # Smart kiro command - auto-detect project and use appropriate agent
@@ -387,6 +431,48 @@ alias mem-stop='agentmemory stop'
 alias mem-status='curl -s http://localhost:3111/agentmemory/health 2>/dev/null | jq . || echo "❌ agentmemory not running. Start with: mem-start"'
 alias mem-viewer='echo "Opening viewer at http://localhost:3113" && open http://localhost:3113 2>/dev/null || xdg-open http://localhost:3113 2>/dev/null'
 alias mem-search='f() { curl -s -X POST http://localhost:3111/agentmemory/smart-search -H "Content-Type: application/json" -d "{\"query\": \"$*\"}" | jq .; }; f'
+
+# ============================================================================
+# MCP Server Profiles (switch between minimal and full configs)
+# ============================================================================
+kiro-mcp-design() {
+  cp ~/.kiro/settings/mcp-design.json ~/.kiro/settings/mcp.json
+  echo "🎨 Design mode: agentmemory + 21st-dev + screenshot + browser-tools + magic-ui"
+}
+kiro-mcp-minimal() {
+  cp ~/.kiro/settings/mcp-minimal.json ~/.kiro/settings/mcp.json
+  echo "⚡ Minimal mode: agentmemory only"
+}
+kiro-mcp-status() {
+  echo "Active MCP servers:"; jq -r '.mcpServers | keys[]' ~/.kiro/settings/mcp.json 2>/dev/null
+}
+
+# ============================================================================
+# Skill Profiles (swap ~/.kiro/skills/ before starting a session)
+# ============================================================================
+kiro-skill-load() {
+  local skill="$1"
+  [ -z "$skill" ] && { echo "Usage: kiro-skill-load <skill-name>"; return 1; }
+  local src=$(find ~/ai-toolkit/skills -type d -name "$skill" | grep -v node_modules | head -1)
+  [ -z "$src" ] && { echo "❌ Skill '$skill' not found in ~/ai-toolkit/skills/"; return 1; }
+  cp -r "$src" ~/.kiro/skills/ && echo "✅ $skill loaded"
+}
+kiro-skill-unload() {
+  [ -z "$1" ] && { echo "Usage: kiro-skill-unload <skill-name>"; return 1; }
+  rm -rf ~/.kiro/skills/"$1" && echo "✅ $1 unloaded"
+}
+kiro-skill-clear() { rm -rf ~/.kiro/skills/*; echo "✅ All skills cleared"; }
+kiro-skill-active() { echo "Active skills:"; ls ~/.kiro/skills/ 2>/dev/null || echo "(none)"; }
+kiro-skill-profile() {
+  local profile="$1"
+  rm -rf ~/.kiro/skills/*
+  case "$profile" in
+    frontend) for s in frontend-design tailwind-theme-builder landing-page design-review color-palette responsiveness-check react-patterns seo-local-business ai-seo seo; do kiro-skill-load "$s" 2>/dev/null; done ;;
+    backend) for s in hono-api-scaffolder vitest deep-research; do kiro-skill-load "$s" 2>/dev/null; done ;;
+    none) echo "✅ Clean slate" ;;
+    *) echo "Profiles: frontend, backend, none" ;;
+  esac
+}
 
 # ============================================================================
 # Skills Management (npx skills CLI + ai-toolkit/skills/)
