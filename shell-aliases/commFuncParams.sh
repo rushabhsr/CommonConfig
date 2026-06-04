@@ -163,6 +163,7 @@ alias start_php='sudo systemctl start apache2 && sudo systemctl start mysql'
 # Aliases to stop Apache2 and MySQL
 alias stop_php='sudo systemctl stop apache2 && sudo systemctl stop mysql'
 
+alias oracle_ssh='ssh ubuntu@80.225.244.121'
 
 alias kode='kiro.exe'
 # Function to create aliases for each folder in ~/applications
