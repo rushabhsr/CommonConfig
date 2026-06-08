@@ -30,7 +30,7 @@ A comprehensive guide for developers to efficiently use Kiro CLI with all availa
 
 ```bash
 cd ~/applications/your-project
-kiro-cli chat
+kiro   # Auto-detects project, creates agent, resumes session
 ```
 
 ### Step 3: Enable Code Intelligence (LSP)
@@ -933,6 +933,49 @@ kiro-cli chat          # Start interactive chat session
 kiro-cli --help        # Show CLI help
 ```
 
+### Agent Commands (from CommonConfig/shell-aliases/kiroAliases.sh)
+
+```bash
+# Agents
+kiro                   # Smart start (auto-detect from current dir)
+k-<project>            # Resume session for specific project
+kf-<project>           # Fresh session (no resume) for specific project
+ka                     # Assistant agent (tasks, emails → ~/assistant/)
+kr                     # Research agent (general exploration)
+kq                     # Query master (read-only, all services)
+km <JIRA-ID>           # Master orchestrator (inits from ~/requirements/<ID>/)
+kpr                    # PR review master
+
+# Management
+kiro-status            # Agents, sessions, memory health, indexed count
+kiro-agents            # List all agent names
+kiro-show <name>       # View agent config JSON
+kiro-edit-prompt <n>   # Edit agent prompt
+kiro-regenerate <n>    # Recreate single agent
+kiro-regenerate-all    # Recreate all agents
+kiro-cleanup           # Delete all agents (auto-recreate on use)
+
+# Skills
+skill-add <repo>       # Install skill globally
+skill-find [query]     # Search skill registry
+kiro-skill-profile <p> # Load skill profile (frontend/backend/none)
+kiro-skills-catalog    # Browse ai-toolkit skills
+
+# MCP
+kiro-mcp-design        # Full MCP (design tools + memory)
+kiro-mcp-minimal       # Agentmemory only
+
+# Git + AI
+gcai                   # Generate commit message from staged
+greview                # Review current diff
+greview-staged         # Review staged changes
+gpr-desc              # Generate PR description
+
+# Memory
+mem-start / mem-stop   # Agentmemory server
+mem-status             # Check health
+```
+
 ---
 
 ## Quick Reference Card
@@ -1084,16 +1127,21 @@ kiro-cli --help
 
 ### Integration with CommonConfig
 
-Your existing shell utilities can be enhanced:
+The agent architecture is fully managed via `CommonConfig/shell-aliases/kiroAliases.sh`:
 
 ```bash
-# Add Kiro-specific aliases to ZunoCommonFunc.sh
-alias kiro-cms='cd ~/applications/cms && kiro-cli chat'
-alias kiro-payment='cd ~/applications/payment && kiro-cli chat'
+# Source all aliases (one-time setup)
+for file in ~/CommonConfig/shell-aliases/*.sh; do source "$file"; done
 
-# Create MCP tools that use your existing functions
-# Example: MCP tool that calls dockerclean from commFuncParams.sh
+# Daily usage
+cd ~/applications/cms-frontend && kiro    # Auto-creates & resumes agent
+km CLAIM-648                              # Master orchestrator for requirement
+ka "draft standup update"                 # Assistant with persistent ~/assistant/
+kq "where is claim status updated?"       # Query across all services
+kiro-status                               # Health check
 ```
+
+**Architecture details**: See `~/applications/aidlc-workflows/docs/AGENT_ARCHITECTURE.md`
 
 ---
 

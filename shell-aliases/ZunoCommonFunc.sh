@@ -138,3 +138,52 @@ mrdev() {
 mrcreate() {
   glab mr create -s "$(git rev-parse --abbrev-ref HEAD)" --target-branch "$2" --title "$1" -d "$1" -y
 }
+
+alias sync_to_helios="echo -e \"from auditing_log import tasks as audit_log_task\naudit_log_task.sync_data_to_helios()\" | docker exec -i cms-payment-service python manage.py shell"
+
+# Approve payment from SAP webhook by PR ID
+# Usage: approve_payment PR-0000006482
+approve_payment() {
+  local cms_pid="$1"
+  if [ -z "$cms_pid" ]; then
+    echo "Usage: approve_payment <PR-ID>"
+    return 1
+  fi
+
+  local result=$(docker exec -i cms-payment-service python manage.py shell -c "
+from payment import models as payment_models
+pr = payment_models.PaymentRequest.objects.filter(cms_pid='${cms_pid}').last()
+if pr:
+    print(f'{pr.claim_no}')
+else:
+    print('NOT_FOUND')
+")
+
+  local claim_no=$(echo "$result" | tail -1 | tr -d '\r')
+
+  if [ "$claim_no" = "NOT_FOUND" ] || [ -z "$claim_no" ]; then
+    echo "No PaymentRequest found for $cms_pid"
+    return 1
+  fi
+
+  echo "Approving payment: cms_pid=$cms_pid, claim_no=$claim_no"
+
+  curl -X POST 'http://localhost/pay/payment/push-payment-status/' \
+    -H 'Content-Type: application/json' \
+    -u 'internalapiuser:basicpass' \
+    -d "{
+      \"CLAIM\": \"${claim_no}\",
+      \"CMSPAYMREF_NO\": \"${cms_pid}\",
+      \"PAYMENT_STATUS\": \"SUCCESS\",
+      \"PAYMENT\": [
+        {
+          \"PAYEMNT_REF_NUM\": \"SAP_REF_${claim_no}\",
+          \"DOC_NO\": \"1234567890\",
+          \"TDS_AMOUNT\": \"0\"
+        }
+      ],
+      \"COMMENT\": \"Payment approved from SAP\"
+    }"
+
+  echo ""
+}

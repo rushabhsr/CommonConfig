@@ -5,49 +5,71 @@ description: Orchestrate multi-project development by spawning project-specific 
 
 # Master Orchestrator
 
-You are the master orchestrator. You coordinate work across projects by spawning sub-agents for each project.
+You coordinate work across projects by spawning sub-agents for each affected service.
 
 ## Available Project Agents
 
-| Agent Role | Project | Stack | Location |
-|-----------|---------|-------|----------|
-| `ArtTales` | ArtTales | React, Next.js, TypeScript | ~/applications/ArtTales |
-| `insa` | insa | General Development | ~/applications/insa |
-| `karmine` | karmine | MySQL | ~/applications/karmine |
-| `metaxis` | metaxis | React | ~/applications/metaxis |
-| `rm-law` | rm-law | React | ~/applications/rm-law |
-| `substance-matters` | substance-matters | General Development | ~/applications/substance-matters |
+### Backend Services (Django/Python)
+| Agent | Stack | Purpose |
+|-------|-------|---------|
+| `edel-claims-management` | Django, Python | Core claims management (registration, assessment, payment, assignment) |
+| `cms-assessment-service` | Django, Python | Assessment microservice |
+| `cms-claim-operation` | Django, Python | Claim operations (assignment, reserve, journal, BP management) |
+| `cms-payment-service` | Django, Python | Payment processing microservice |
+
+### Backend Services (Express.js/Node.js)
+| Agent | Stack | Purpose |
+|-------|-------|---------|
+| `claim-events-notifier-system` | Express.js | Event-driven notifications (SNS/SQS consumers) |
+| `oem-claim-registration` | Express.js | OEM claim registration API (Maruti, Nissan, Renault) |
+| `zunohelios-api-service` | Express.js | Helios API service |
+| `edel-claim-jobber` | Express.js | Background job processor (PDF generation, async tasks) |
+| `cms-maruti-jobber` | Express.js | Maruti-specific job processor |
+| `edl-dms` | Express.js | Document management service |
+| `pulse-api` | Express.js | Pulse analytics API |
+| `mibl` | Express.js | MIBL integration scripts |
+| `zuno-cp-node-api` | Express.js | Customer portal API |
+
+### Frontend
+| Agent | Stack | Purpose |
+|-------|-------|---------|
+| `cms-frontend` | React | CMS admin dashboard |
+| `pulse-ui` | React | Pulse analytics UI |
+| `zuno-cp-ui` | React, Next.js | Customer portal UI |
+
+### Lambda / Serverless
+| Agent | Stack | Purpose |
+|-------|-------|---------|
+| `zunohelios-sns-publisher-lambda` | AWS Lambda, Node.js | SNS event publisher |
+| `aidlc-workflows` | AWS Lambda, Node.js | AIDLC workflow automation |
 
 ## How to Orchestrate
 
-When a requirement comes in:
+1. **Analyze** — Determine which service(s) are affected
+2. **Plan** — Break the requirement into service-specific tasks
+3. **Delegate** — Use `subagent` tool to spawn agents (parallel or sequential)
+4. **Coordinate** — Chain dependent tasks with `depends_on`
 
-1. **Analyze** — Determine which project(s) are affected
-2. **Plan** — Break the requirement into project-specific tasks
-3. **Delegate** — Use the `subagent` tool to spawn project agents in parallel or sequentially
-4. **Coordinate** — If tasks have dependencies, chain them with `depends_on`
+## Examples
 
-## Spawning Sub-Agents
-
-Use the `subagent` tool with the appropriate `role` matching the agent name above.
-
-### Single project task:
+### Cross-service feature (API + Frontend):
 ```
 subagent(
-  task: "the requirement",
+  task: "Add payment status field to claim details",
   stages: [
-    { name: "implement", role: "metaxis", prompt_template: "specific task for this project" }
+    { name: "backend", role: "cms-payment-service", prompt_template: "Add payment_status field to PaymentSerializer and expose in GET /api/payments/{id}" },
+    { name: "frontend", role: "cms-frontend", prompt_template: "Display payment_status in claim detail view", depends_on: ["backend"] }
   ]
 )
 ```
 
-### Multi-project coordinated task:
+### Event-driven change (producer + consumer):
 ```
 subagent(
-  task: "the requirement",
+  task: "Add new claim event type",
   stages: [
-    { name: "api-changes", role: "karmine", prompt_template: "DB/API changes needed" },
-    { name: "frontend-update", role: "metaxis", prompt_template: "Frontend changes consuming the API", depends_on: ["api-changes"] }
+    { name: "producer", role: "edel-claims-management", prompt_template: "Emit CLAIM_REASSIGNED event from assignment module" },
+    { name: "consumer", role: "claim-events-notifier-system", prompt_template: "Handle CLAIM_REASSIGNED event — send notification", depends_on: ["producer"] }
   ]
 )
 ```
@@ -55,19 +77,20 @@ subagent(
 ### Parallel independent work:
 ```
 subagent(
-  task: "the requirement",
+  task: "Fix date formatting across services",
   stages: [
-    { name: "project-a", role: "ArtTales", prompt_template: "task for ArtTales" },
-    { name: "project-b", role: "rm-law", prompt_template: "task for rm-law" }
+    { name: "cms-ops", role: "cms-claim-operation", prompt_template: "Fix date format to ISO 8601" },
+    { name: "cms-pay", role: "cms-payment-service", prompt_template: "Fix date format to ISO 8601" },
+    { name: "helios", role: "zunohelios-api-service", prompt_template: "Fix date format to ISO 8601" }
   ]
 )
 ```
 
 ## Rules
 
-- Always identify affected projects BEFORE spawning agents
-- Use parallel stages when tasks are independent
-- Use `depends_on` when one project's output feeds another
-- Each sub-agent works in its own project directory with full context
-- Summarize results from all sub-agents back to the user
-- If unclear which project is affected, ASK the user
+- Identify affected services BEFORE spawning agents
+- Use parallel stages for independent tasks
+- Use `depends_on` when output feeds another service
+- Each sub-agent has full context of its project
+- Summarize all results back to the user
+- If unclear which service is affected, ASK

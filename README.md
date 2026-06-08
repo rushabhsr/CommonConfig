@@ -1,6 +1,6 @@
 # CommonConfig
 
-A collection of shell utilities and aliases for development workflow automation, particularly focused on Python/Django projects, Docker management, database operations, and git workflows.
+Shell utilities, AI agent management, and development workflow automation for Python/Django, Docker, databases, and git workflows.
 
 ## 📁 Repository Structure
 
@@ -9,180 +9,176 @@ CommonConfig/
 ├── README.md
 ├── .gitignore
 │
-├── docs/                              # Documentation
-│   └── KIRO_CLI_GUIDE.md             # Complete guide for Kiro CLI usage
-│
 ├── shell-aliases/                     # Shell functions to be sourced
+│   ├── kiroAliases.sh                # Kiro AI agent management (core)
 │   ├── ZunoCommonFunc.sh             # Django/Docker aliases
 │   ├── fyndCommonFunc.sh             # Database/K8s utilities
-│   ├── commFuncParams.sh             # Docker cleanup/SSH agent
+│   ├── commFuncParams.sh             # Docker cleanup/SSH agent/system aliases
 │   ├── gitAliases.sh                 # 100+ Git aliases (from oh-my-bash)
 │   └── shellHistory.sh               # History config with up arrow search
+│
+├── kiro-skills/                       # AI skills (caveman, graphify, orchestrate)
+│   ├── caveman/                       # Token compression
+│   ├── caveman-compress/              # File compression scripts
+│   ├── caveman-commit/                # Commit message generation
+│   ├── caveman-review/                # Code review
+│   ├── cavecrew/                      # Multi-agent coordination
+│   ├── graphify/                      # Code → knowledge graph
+│   └── orchestrate/                   # Cross-project delegation
+│
+├── kiro-bootstrap.sh                  # Auto-generate agent configs from projects
+├── setup-ai-toolkit.sh                # Clone and setup ai-toolkit repos
 │
 ├── db-managers/                       # Database management tools
 │   ├── postgres_db_manager.sh
 │   ├── clickhouse_db_manager.sh
-│   ├── *.config.example
-│   └── README_*.md
+│   └── *.config.example
 │
 ├── git-tools/                         # Git utilities
-│   ├── sync_branches.sh
-│   └── README_sync_branches.md
+│   └── sync_branches.sh
 │
 ├── network-tools/                     # Network utilities
 │   └── create_and_run_port_forward.sh
 │
-└── checklist-generator/               # Checklist/planner tools
-    ├── generate_checklist.py
-    ├── checklist_config.csv
-    └── templates (html/md)
+├── checklist-generator/               # Checklist/planner tools
+│   └── generate_checklist.py
+│
+└── docs/
+    └── KIRO_CLI_GUIDE.md
 ```
 
 ## 🚀 Quick Start
 
-### Automatic Setup (Recommended)
+### Setup
 
-1. **Clone the repository**:
-   ```bash
-   git clone git@github.com:rushabhsr/CommonConfig.git ~/CommonConfig
-   ```
-
-2. **Add all shell aliases to your system**:
-   
-   For **bash** users (adds to `~/.bashrc`):
-   ```bash
-   for file in ~/CommonConfig/shell-aliases/*.sh; do 
-     echo "source \"$file\"" >> ~/.bashrc
-   done
-   ```
-   
-   For **zsh** users (adds to `~/.zshrc`):
-   ```bash
-   for file in ~/CommonConfig/shell-aliases/*.sh; do 
-     echo "source \"$file\"" >> ~/.zshrc
-   done
-   ```
-
-3. **Reload your shell**:
-   ```bash
-   source ~/.bashrc  # or source ~/.zshrc for zsh
-   # OR restart terminal
-   exec $SHELL
-   ```
-
-### Verify Installation
-
-Test that aliases are loaded:
 ```bash
-# Test git aliases
-gst  # Should show git status
+git clone git@github.com:rushabhsr/CommonConfig.git ~/CommonConfig
 
-# Test utility functions
-type dockerclean  # Should show function definition
-type getCM        # Should show function definition
+# Add all shell aliases (bash)
+for file in ~/CommonConfig/shell-aliases/*.sh; do 
+  echo "source \"$file\"" >> ~/.bashrc
+done
+
+source ~/.bashrc
 ```
 
-### What Gets Added
+### Verify
 
-All `.sh` files from `shell-aliases/` directory:
-- ✅ `ZunoCommonFunc.sh` - Django/Docker log functions
-- ✅ `fyndCommonFunc.sh` - K8s/Database utilities  
-- ✅ `commFuncParams.sh` - Docker cleanup & SSH agent
-- ✅ `gitAliases.sh` - 100+ git shortcuts
-- ✅ `shellHistory.sh` - Enhanced history search
-- ✅ `kiroAliases.sh` - Kiro CLI integration (if present)
+```bash
+kiro-help    # Show all Kiro AI commands
+gst          # git status
+kiro-status  # Agent & memory health
+```
 
-## 📋 Features
+## 🤖 Kiro AI Agent Architecture
 
-### Django Development Aliases
-- `cms`, `cmsops`, `cas`, `cmspay`, `audit` - Quick navigation with venv activation
-- `runserver`, `runcas`, `runops`, `runpay` - Django server shortcuts
-- `migrate`, `mm`, `dbshell` - Database management
-- `cascelery`, `cmscelery`, `opscelery` - Celery worker shortcuts
+### Agent Types
 
-### Docker Log Functions
-- `opslogs [lines]`, `payclogs [lines]`, `caslogs [lines]` - Service-specific log tailing
-- `dockerclean [prefix]` - Clean containers/images by prefix or full system prune
+| Command | Agent | Purpose |
+|---------|-------|---------|
+| `kiro` | Auto-detected | Smart start from current project dir |
+| `k-<project>` | Service agent | Resume session for specific project |
+| `kf-<project>` | Service agent | **Fresh** session (no resume) |
+| `ka` | Assistant | Tasks, emails, notes → persists to `~/assistant/` |
+| `kr` | Research | General exploration, not tied to any project |
+| `kq` | Query Master | Read-only search across ALL service codebases |
+| `km <ID>` | Master | Cross-service orchestrator, inits from `~/requirements/<ID>/` |
+| `kpr` | PR Review | Multi-MR review + deployment checklist |
+
+### How It Works
+
+```
+~/applications/<project>/  →  Service agents (auto-created, auto-indexed)
+~/requirements/<JIRA-ID>/  →  Master agents (BRDs, AIDLC docs, progress)
+~/assistant/               →  Assistant agent persistent memory
+~/.kiro/agents/            →  Agent JSON configs
+~/.kiro/skills/            →  Global skills (symlinked into projects)
+```
+
+- **Service agents** auto-create when you first `cd ~/applications/<project> && kiro`
+- **Knowledge base** auto-indexes the project on first creation (background)
+- **Master agents** read BRDs, delegate to service agents, track progress in `~/requirements/<ID>/progress.md`
+- **Assistant** persists notes/tasks/drafts to `~/assistant/` across sessions
+- **Tab completion**: `km` + Tab autocompletes JIRA IDs from `~/requirements/`
+
+### Management
+
+```bash
+kiro-status              # Agents, sessions, memory health, indexed count
+kiro-agents              # List all agent names
+kiro-show <name>         # View agent config
+kiro-edit-prompt <name>  # Edit agent prompt
+kiro-regenerate <name>   # Recreate agent
+kiro-regenerate-all      # Recreate all
+kiro-cleanup             # Delete all (auto-recreate on use)
+```
+
+### Skills & MCP
+
+```bash
+skill-add <repo>                # Install skill globally
+skill-find [query]              # Search registry
+kiro-skill-profile frontend     # Load frontend skill set
+kiro-skill-profile backend      # Load backend skill set
+kiro-skills-catalog             # Browse ai-toolkit skills
+kiro-mcp-design                 # Full MCP (design tools + memory)
+kiro-mcp-minimal                # Agentmemory only
+```
+
+### Git + AI
+
+```bash
+gcai            # Generate commit message from staged
+greview         # Review current diff
+greview-staged  # Review staged changes
+gpr-desc        # Generate PR description
+```
+
+## 📋 Shell Aliases
+
+### Django Development
+- `cms`, `cmsops`, `cas`, `cmspay`, `audit` — Quick navigation with venv
+- `runserver`, `runcas`, `runops`, `runpay` — Django server shortcuts
+- `migrate`, `mm`, `dbshell` — Database management
+- `cascelery`, `cmscelery`, `opscelery` — Celery workers
+
+### Docker
+- `opslogs [lines]`, `payclogs [lines]`, `caslogs [lines]` — Log tailing
+- `dockerclean [prefix]` — Clean containers/images by prefix
+- `dps`, `dpsa`, `dex`, `dlogs` — Docker shortcuts
 
 ### Utilities
-- `getDbUrl <pattern>` - Extract database URLs (macOS clipboard integration)
-- `getCM <id> <description> [complete%] [hours]` - Format commit messages
-- `conPod <name>` - Connect to Kubernetes pods
-- `DEBUG <message>` - Timestamped debug logging
+- `getDbUrl <pattern>` — Extract database URLs
+- `getCM <id> <description>` — Format commit messages
+- `conPod <name>` — Connect to K8s pods
+- `redis-clear [pattern]` — Clear Redis keys
+- `spillover` — Track work session time
 
-### WSL Port Forwarding
-- `create_and_run_port_forward.sh [port]` - Automated WSL to Windows port forwarding
+### Git (100+ aliases)
+- `gst` — git status
+- `gco` — git checkout
+- `gcb` — git checkout -b
+- `glog` — pretty log with graph
+- `gp` / `gl` — push / pull
+
+### System
+- `ll`, `la`, `lt` — ls variants
+- `ff`, `fd` — find file/directory
+- `ports`, `myip` — network info
+- `py`, `pip`, `venv`, `activate` — Python shortcuts
 
 ## 🔧 Configuration
 
 ### Shell Compatibility
-- Primary: `bash` (modify `~/.bashrc`)
-- For `zsh`: Use `~/.zshrc` instead
-- For `fish`: Manual adaptation required
+- Primary: **bash** (`~/.bashrc`)
+- Also works with **zsh** (`~/.zshrc`)
 
 ### Customization
-Edit individual `.sh` files to match your:
-- Project paths
-- Service names  
-- Docker container names
-- Database connection files
+Edit individual `.sh` files to match your project paths, service names, and Docker container names.
 
-## ⚠️ Important Notes
+## ⚠️ Notes
 
-- **Review scripts before sourcing** - Contains hardcoded paths specific to the author's setup
-- **SSH agent management** - Automatically starts if not running
-- **macOS dependencies** - Some functions use `pbcopy` (clipboard)
-- **Docker permissions** - Some commands require `sudo`
-
-## 🛠️ Manual Setup (Alternative)
-
-Source individual scripts as needed:
-```bash
-source ~/CommonConfig/shell-aliases/ZunoCommonFunc.sh      # Django aliases
-source ~/CommonConfig/shell-aliases/commFuncParams.sh      # Docker utilities
-source ~/CommonConfig/shell-aliases/fyndCommonFunc.sh      # Database/K8s helpers
-source ~/CommonConfig/shell-aliases/gitAliases.sh          # Git aliases
-source ~/CommonConfig/shell-aliases/shellHistory.sh        # History with up arrow search
-```
-
-## 📝 Usage Examples
-
-```bash
-# Navigate to project and activate venv
-cms
-
-# Run Django server on specific port
-runcas  # Runs on port 8005
-
-# View last 50 lines of service logs
-opslogs 50
-
-# Clean all Docker resources with 'test' prefix
-dockerclean test
-
-# Forward WSL port 3000 to Windows
-./network-tools/create_and_run_port_forward.sh 3000
-
-# Use git aliases
-gst              # git status
-gco main         # git checkout main
-gcam "message"   # git commit -all -message
-glog             # pretty git log
-```
-
-## 📚 Additional Features
-
-### Git Aliases (100+ aliases)
-- `gst` - git status
-- `gco` - git checkout
-- `gcb` - git checkout -b (new branch)
-- `glog` - pretty git log with graph
-- `gp` - git push
-- `gl` - git pull
-- And many more! See `shell-aliases/gitAliases.sh`
-
-### Shell History with Up Arrow Search
-- Type partial command and press ↑ to search history
-- Example: Type "git" and press ↑ to cycle through git commands
-- Increased history size (10,000 commands)
-- Duplicate removal and timestamps
+- Review scripts before sourcing — contains paths specific to the author
+- SSH agent auto-starts if not running
+- Some commands require `sudo` (Docker)
+- Memory server: `mem-start` / `mem-stop` / `mem-status`
