@@ -216,6 +216,7 @@ _kiro_create_aliases() {
     alias "kiro-$folder"="ensure_kiro_agent '$agent' '${dir%/}' && cd '${dir%/}' && command kiro-cli chat --agent '$agent' --resume"
     alias "k-$folder"="ensure_kiro_agent '$agent' '${dir%/}' && cd '${dir%/}' && command kiro-cli chat --agent '$agent' --resume"
     alias "kf-$folder"="ensure_kiro_agent '$agent' '${dir%/}' && cd '${dir%/}' && command kiro-cli chat --agent '$agent'"
+    alias "kl-$folder"="ensure_kiro_agent '$agent' '${dir%/}' && cd '${dir%/}' && command kiro-cli chat --agent '$agent' --resume-picker"
   done
 }
 _kiro_create_aliases
